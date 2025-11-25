@@ -1,0 +1,8 @@
+{
+  "src": [
+    "pages/TransactionListPage",
+    "pages/TransactionEditPage",
+    "pages/CategoryManagePage",
+    "pages/Index"
+  ]
+}
