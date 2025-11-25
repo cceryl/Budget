@@ -12,14 +12,15 @@ export struct TransactionListPage {
   @State searchText: string = '';
   @State selectedCategoryId: string = 'all';
   @State showCategorySelector: boolean = false;
+  @Prop @Watch('onRefreshTriggerChange') refreshTrigger: number = 0; // 接收父组件的刷新触发器
   private dataService: DataService = DataService.getInstance();
 
   aboutToAppear(): void {
     this.loadData();
   }
 
-  onPageShow(): void {
-    // 每次页面显示时重新加载数据（从编辑页返回时）
+  // 监听刷新触发器变化
+  onRefreshTriggerChange(): void {
     this.loadData();
   }
 

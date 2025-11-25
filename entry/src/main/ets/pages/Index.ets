@@ -4,6 +4,12 @@ import { TransactionListPage } from './TransactionListPage';
 @Component
 struct Index {
   @State currentTab: string = 'details'; // 'details' | 'stats' | 'budget' | 'settings'
+  @State refreshKey: number = 0; // 用于强制刷新子组件
+
+  onPageShow(): void {
+    // 从编辑页返回时刷新明细页面
+    this.refreshKey++;
+  }
 
   navigateToEdit(): void {
     const router = this.getUIContext().getRouter();
@@ -17,7 +23,7 @@ struct Index {
       // 主内容区（使用Stack让内容填充整个空间）
       Column() {
         if (this.currentTab === 'details') {
-          TransactionListPage()
+          TransactionListPage({ refreshTrigger: this.refreshKey })
         } else if (this.currentTab === 'stats') {
           Column() {
             Text('统计（空）')
@@ -53,10 +59,6 @@ struct Index {
           .backgroundColor('#f5f5f5')
         }
       }
-      .width('100%')
-      .height('100%')
-      .padding({ bottom: 64 })
-
       .width('100%')
       .height('100%')
       .padding({ bottom: 64 })
