@@ -25,8 +25,10 @@ struct TransactionListPage {
   }
 
   async loadData(): Promise<void> {
-    this.transactions = await this.dataService.getAllTransactions();
+    // 先加载分类数据，确保分类列表可用
     this.categories = await this.dataService.getAllCategories();
+    // 再加载交易数据
+    this.transactions = await this.dataService.getAllTransactions();
     // 按日期倒序排列
     this.transactions.sort((a, b) => b.date - a.date);
     this.applyFilter();
@@ -112,7 +114,7 @@ struct TransactionListPage {
     Column() {
       // 标题栏
       Row() {
-        Text('智能记账本')
+        Text('记账本')
           .fontSize(24)
           .fontWeight(FontWeight.Bold)
           .fontColor('#1a1a1a')

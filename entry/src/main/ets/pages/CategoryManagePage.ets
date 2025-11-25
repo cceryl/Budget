@@ -122,7 +122,7 @@ struct CategoryManagePage {
       .barMode(BarMode.Fixed)
       .barWidth('100%')
       .barHeight(48)
-      .animationDuration(300)
+      .animationDuration(0)
       .onChange((index: number) => {
         this.selectedTab = index;
       })
