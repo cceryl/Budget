@@ -216,7 +216,7 @@ struct TransactionListPage {
             this.TransactionItem(transaction)
           }
           .swipeAction({ end: this.DeleteButton(transaction.id) })
-        }, (transaction: Transaction) => transaction.id)
+        }, (transaction: Transaction) => JSON.stringify(transaction))
       }
       .width('100%')
       .layoutWeight(1)
