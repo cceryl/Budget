@@ -1,8 +1,7 @@
 {
   "src": [
-    "pages/TransactionListPage",
+    "pages/Index",
     "pages/TransactionEditPage",
-    "pages/CategoryManagePage",
-    "pages/Index"
+    "pages/CategoryManagePage"
   ]
 }

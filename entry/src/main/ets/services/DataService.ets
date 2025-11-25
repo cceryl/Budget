@@ -43,9 +43,13 @@ export class DataService {
    * 初始化预设分类
    */
   private async initializeCategories(): Promise<void> {
-    const jsonArray = PRESET_CATEGORIES.map(cat => cat.toJson());
-    await this.preferencesInstance?.put(this.CATEGORY_KEY, JSON.stringify(jsonArray));
-    await this.preferencesInstance?.flush();
+    try {
+      const jsonArray = PRESET_CATEGORIES.map(cat => cat.toJson());
+      await this.preferencesInstance?.put(this.CATEGORY_KEY, JSON.stringify(jsonArray));
+      await this.preferencesInstance?.flush();
+    } catch (err) {
+      console.error('Initialize categories failed:', err);
+    }
   }
 
   // ==================== Transaction CRUD ====================

@@ -3,9 +3,8 @@ import { Category } from '../models/Category';
 import { DataService } from '../services/DataService';
 import { Router } from '@kit.ArkUI';
 
-@Entry
 @Component
-struct TransactionListPage {
+export struct TransactionListPage {
   @State transactions: Transaction[] = [];
   @State categories: Category[] = [];
   @State filteredTransactions: Transaction[] = [];
@@ -235,25 +234,6 @@ struct TransactionListPage {
         .layoutWeight(1)
       }
 
-      // 底部添加按钮
-      Button() {
-        Row() {
-          Text('+')
-            .fontSize(28)
-            .fontColor('#ffffff')
-            .margin({ right: 8 })
-          Text('添加交易')
-            .fontSize(16)
-            .fontColor('#ffffff')
-        }
-      }
-      .width('90%')
-      .height(56)
-      .margin({ left: '5%', right: '5%', bottom: 16, top: 8 })
-      .backgroundColor('#4CAF50')
-      .borderRadius(28)
-      .onClick(() => this.navigateToEdit())
-
       // 分类选择器弹窗
       if (this.showCategorySelector) {
         this.CategorySelectorDialog()
@@ -405,9 +385,10 @@ struct TransactionListPage {
   DeleteButton(id: string) {
     Button() {
       Text('删除')
-        .fontSize(14)
+        .fontSize(16)
         .fontColor('#ffffff')
     }
+    .width(80)
     .height('100%')
     .backgroundColor('#F44336')
     .onClick(() => this.deleteTransaction(id))

@@ -26,7 +26,7 @@ export default class EntryAbility extends UIAbility {
 
     // 等待数据服务初始化完成后再加载页面
     DataService.getInstance().initialize(this.context).then(() => {
-      windowStage.loadContent('pages/TransactionListPage', (err) => {
+      windowStage.loadContent('pages/Index', (err) => {
         if (err.code) {
           hilog.error(DOMAIN, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err));
           return;
