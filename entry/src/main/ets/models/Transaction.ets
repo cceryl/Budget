@@ -39,13 +39,6 @@ export class Transaction {
   }
 
   /**
-   * 将金额从分转换为元（带两位小数）
-   */
-  public getAmountInYuan(): string {
-    return (this.amount / 100).toFixed(2);
-  }
-
-  /**
    * 从普通对象创建 Transaction 实例
    */
   static fromJson(json: TransactionJson): Transaction {

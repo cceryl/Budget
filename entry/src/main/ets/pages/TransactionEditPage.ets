@@ -44,7 +44,8 @@ struct TransactionEditPage {
     const transaction = await this.dataService.getTransactionById(this.transactionId);
     if (transaction) {
       this.transactionType = transaction.type;
-      this.amount = transaction.getAmountInYuan();
+      // 将分转换为元显示
+      this.amount = (transaction.amount / 100).toFixed(2);
       this.selectedCategoryId = transaction.categoryId;
       this.description = transaction.description;
       this.selectedDate = transaction.date;
@@ -107,6 +108,35 @@ struct TransactionEditPage {
         this.showToast('添加失败');
       }
     }
+  }
+
+  async deleteTransaction(): Promise<void> {
+    const uiContext = this.getUIContext();
+    uiContext.showAlertDialog({
+      title: '确认删除',
+      message: '确定要删除这笔交易吗?',
+      buttons: [
+        {
+          value: '取消',
+          fontColor: '#666666',
+          action: () => {}
+        },
+        {
+          value: '删除',
+          fontColor: '#F44336',
+          action: async () => {
+            const success = await this.dataService.deleteTransaction(this.transactionId);
+            if (success) {
+              this.showToast('删除成功');
+              const router: Router = this.getUIContext().getRouter();
+              router.back();
+            } else {
+              this.showToast('删除失败');
+            }
+          }
+        }
+      ]
+    });
   }
 
   showToast(message: string): void {
@@ -181,6 +211,17 @@ struct TransactionEditPage {
       .padding({ left: 16, right: 16 })
       .backgroundColor('#ffffff')
 
+      // 编辑模式下显示删除按钮
+      if (this.isEditMode) {
+        Button('删除此交易')
+          .width('90%')
+          .height(48)
+          .margin({ left: '5%', right: '5%', top: 16 })
+          .backgroundColor('#F44336')
+          .fontColor('#ffffff')
+          .onClick(() => this.deleteTransaction())
+      }
+
       Scroll() {
         Column() {
           // 交易类型选择
@@ -240,7 +281,7 @@ struct TransactionEditPage {
                 .margin({ right: 8 })
 
               TextInput({ text: this.amount, placeholder: '0.00' })
-                .type(InputType.Number)
+                .type(InputType.NUMBER_DECIMAL)
                 .fontSize(24)
                 .fontColor('#1a1a1a')
                 .backgroundColor('#ffffff')

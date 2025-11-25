@@ -12,6 +12,7 @@ struct TransactionListPage {
   @State filterType: string = 'all'; // 'all', 'income', 'expense'
   @State searchText: string = '';
   @State selectedCategoryId: string = 'all';
+  @State showCategorySelector: boolean = false;
   private dataService: DataService = DataService.getInstance();
 
   aboutToAppear(): void {
@@ -51,6 +52,13 @@ struct TransactionListPage {
     }
 
     this.filteredTransactions = result;
+  }
+
+  getAvailableCategories(): Category[] {
+    if (this.filterType === 'all') {
+      return this.categories;
+    }
+    return this.categories.filter(c => c.type === this.filterType);
   }
 
   getCategoryName(categoryId: string): string {
@@ -144,6 +152,7 @@ struct TransactionListPage {
             .fontColor(this.filterType === 'all' ? '#ffffff' : '#666666')
             .onClick(() => {
               this.filterType = 'all';
+              this.selectedCategoryId = 'all'; // 切换类型时重置分类过滤
               this.applyFilter();
             })
 
@@ -155,6 +164,7 @@ struct TransactionListPage {
             .margin({ left: 8 })
             .onClick(() => {
               this.filterType = 'income';
+              this.selectedCategoryId = 'all'; // 切换类型时重置分类过滤
               this.applyFilter();
             })
 
@@ -166,35 +176,29 @@ struct TransactionListPage {
             .margin({ left: 8 })
             .onClick(() => {
               this.filterType = 'expense';
+              this.selectedCategoryId = 'all'; // 切换类型时重置分类过滤
               this.applyFilter();
             })
 
           Blank()
 
-          // 按分类过滤下拉选择
-          Text('分类: ' + (this.selectedCategoryId === 'all' ? '全部' : this.getCategoryName(this.selectedCategoryId)))
-            .fontSize(14)
-            .fontColor('#666666')
-            .padding(8)
-            .backgroundColor('#f0f0f0')
-            .borderRadius(4)
-            .onClick(() => {
-              // 这里可以弹出分类选择对话框
-              // 简化实现：循环切换
-              if (this.selectedCategoryId === 'all') {
-                if (this.categories.length > 0) {
-                  this.selectedCategoryId = this.categories[0].id;
-                }
-              } else {
-                const currentIndex = this.categories.findIndex(c => c.id === this.selectedCategoryId);
-                if (currentIndex < this.categories.length - 1) {
-                  this.selectedCategoryId = this.categories[currentIndex + 1].id;
-                } else {
-                  this.selectedCategoryId = 'all';
-                }
-              }
-              this.applyFilter();
-            })
+          // 分类选择下拉菜单
+          Button() {
+            Row() {
+              Text(this.selectedCategoryId === 'all' ? '全部分类' : this.getCategoryName(this.selectedCategoryId))
+                .fontSize(14)
+                .fontColor('#666666')
+              Text(' ▼')
+                .fontSize(12)
+                .fontColor('#999999')
+            }
+          }
+          .padding({ left: 12, right: 12 })
+          .height(32)
+          .backgroundColor('#f0f0f0')
+          .onClick(() => {
+            this.showCategorySelector = true;
+          })
         }
         .width('100%')
         .margin({ top: 12 })
@@ -247,10 +251,115 @@ struct TransactionListPage {
       .backgroundColor('#4CAF50')
       .borderRadius(28)
       .onClick(() => this.navigateToEdit())
+
+      // 分类选择器弹窗
+      if (this.showCategorySelector) {
+        this.CategorySelectorDialog()
+      }
     }
     .width('100%')
     .height('100%')
     .backgroundColor('#f5f5f5')
+  }
+
+  @Builder
+  CategorySelectorDialog() {
+    Column() {
+      // 遮罩层
+      Column()
+        .width('100%')
+        .height('100%')
+        .backgroundColor('#000000')
+        .opacity(0.5)
+        .onClick(() => {
+          this.showCategorySelector = false;
+        })
+
+      // 对话框
+      Column() {
+        Text('选择分类')
+          .fontSize(18)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#1a1a1a')
+          .width('100%')
+          .padding({ bottom: 16 })
+          .borderWidth({ bottom: 1 })
+          .borderColor('#f0f0f0')
+
+        // 分类列表
+        List({ space: 0 }) {
+          // "全部分类"选项
+          ListItem() {
+            Row() {
+              Text('全部分类')
+                .fontSize(16)
+                .fontColor(this.selectedCategoryId === 'all' ? '#4CAF50' : '#1a1a1a')
+                .fontWeight(this.selectedCategoryId === 'all' ? FontWeight.Bold : FontWeight.Normal)
+            }
+            .width('100%')
+            .height(48)
+            .padding({ left: 16, right: 16 })
+            .onClick(() => {
+              this.selectedCategoryId = 'all';
+              this.showCategorySelector = false;
+              this.applyFilter();
+            })
+          }
+
+          // 根据当前类型显示对应分类
+          ForEach(this.getAvailableCategories(), (category: Category) => {
+            ListItem() {
+              Row() {
+                Text(category.name)
+                  .fontSize(16)
+                  .fontColor(this.selectedCategoryId === category.id ? '#4CAF50' : '#1a1a1a')
+                  .fontWeight(this.selectedCategoryId === category.id ? FontWeight.Bold : FontWeight.Normal)
+
+                Blank()
+
+                if (this.selectedCategoryId === category.id) {
+                  Text('✓')
+                    .fontSize(18)
+                    .fontColor('#4CAF50')
+                }
+              }
+              .width('100%')
+              .height(48)
+              .padding({ left: 16, right: 16 })
+              .onClick(() => {
+                this.selectedCategoryId = category.id;
+                this.showCategorySelector = false;
+                this.applyFilter();
+              })
+            }
+          }, (category: Category) => category.id)
+        }
+        .width('100%')
+        .height(400)
+        .divider({ strokeWidth: 1, color: '#f0f0f0' })
+
+        // 关闭按钮
+        Button('关闭')
+          .width('100%')
+          .height(44)
+          .margin({ top: 16 })
+          .backgroundColor('#f0f0f0')
+          .fontColor('#666666')
+          .onClick(() => {
+            this.showCategorySelector = false;
+          })
+      }
+      .width('80%')
+      .height(500)
+      .padding(16)
+      .backgroundColor('#ffffff')
+      .borderRadius(12)
+      .position({ x: '10%', y: '15%' })
+    }
+    .width('100%')
+    .height('100%')
+    .position({ x: 0, y: 0 })
+    .zIndex(999)
   }
 
   @Builder
@@ -278,7 +387,7 @@ struct TransactionListPage {
       .layoutWeight(1)
 
       Column() {
-        Text((transaction.type === 'income' ? '+' : '-') + '¥' + transaction.getAmountInYuan())
+        Text((transaction.type === 'income' ? '+' : '-') + '¥' + (transaction.amount / 100).toFixed(2))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .fontColor(transaction.type === 'income' ? '#4CAF50' : '#F44336')
