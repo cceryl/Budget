@@ -1,5 +1,6 @@
 import { TransactionListPage } from './TransactionListPage';
 import { BudgetPage } from './BudgetPage';
+import { StatisticsPage } from './StatisticsPage';
 
 @Entry
 @Component
@@ -26,16 +27,7 @@ struct Index {
         if (this.currentTab === 'details') {
           TransactionListPage({ refreshTrigger: this.refreshKey })
         } else if (this.currentTab === 'stats') {
-          Column() {
-            Text('统计（空）')
-              .fontSize(18)
-              .fontColor('#666666')
-          }
-          .width('100%')
-          .height('100%')
-          .justifyContent(FlexAlign.Center)
-          .alignItems(HorizontalAlign.Center)
-          .backgroundColor('#f5f5f5')
+          StatisticsPage({ refreshTrigger: this.refreshKey })
         } else if (this.currentTab === 'budget') {
           BudgetPage({ refreshTrigger: this.refreshKey })
         } else if (this.currentTab === 'settings') {
