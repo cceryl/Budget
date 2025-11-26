@@ -150,32 +150,34 @@ export struct BudgetPage {
       // 标题栏
       Row() {
         Text(this.getPeriodText())
-          .fontSize(24)
+          .fontSize(26)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#1a1a1a')
+          .fontColor($r('app.color.text_primary'))
 
         Blank()
 
         Button('新增预算')
-          .fontSize(16)
-          .padding({ left: 12, right: 12, top: 8, bottom: 8 })
+          .fontSize(14)
+          .padding({ left: 16, right: 16, top: 8, bottom: 8 })
           .borderRadius(20)
-          .backgroundColor('#4CAF50')
-          .fontColor('#ffffff')
+          .backgroundColor($r('app.color.primary_color'))
+          .fontColor('#FFFFFF')
           .onClick(() => this.navigateToEdit())
       }
       .width('100%')
-      .height(56)
-      .padding({ left: 16, right: 16 })
-      .backgroundColor('#ffffff')
+      .height(64)
+      .padding({ left: 20, right: 20 })
+      .backgroundColor($r('app.color.background_primary'))
 
       // 周期选择器
-      Row() {
+      Row({ space: 12 }) {
         Button('周')
           .fontSize(14)
-          .height(32)
-          .backgroundColor(this.currentPeriod === 'week' ? '#4CAF50' : '#f0f0f0')
-          .fontColor(this.currentPeriod === 'week' ? '#ffffff' : '#666666')
+          .height(36)
+          .padding({ left: 16, right: 16 })
+          .backgroundColor(this.currentPeriod === 'week' ? $r('app.color.primary_color') : $r('app.color.button_secondary_bg'))
+          .fontColor(this.currentPeriod === 'week' ? '#FFFFFF' : $r('app.color.button_secondary_text'))
+          .borderRadius(18)
           .onClick(() => {
             this.currentPeriod = 'week';
             this.loadData();
@@ -183,10 +185,11 @@ export struct BudgetPage {
 
         Button('月')
           .fontSize(14)
-          .height(32)
-          .backgroundColor(this.currentPeriod === 'month' ? '#4CAF50' : '#f0f0f0')
-          .fontColor(this.currentPeriod === 'month' ? '#ffffff' : '#666666')
-          .margin({ left: 8 })
+          .height(36)
+          .padding({ left: 16, right: 16 })
+          .backgroundColor(this.currentPeriod === 'month' ? $r('app.color.primary_color') : $r('app.color.button_secondary_bg'))
+          .fontColor(this.currentPeriod === 'month' ? '#FFFFFF' : $r('app.color.button_secondary_text'))
+          .borderRadius(18)
           .onClick(() => {
             this.currentPeriod = 'month';
             this.loadData();
@@ -194,10 +197,11 @@ export struct BudgetPage {
 
         Button('年')
           .fontSize(14)
-          .height(32)
-          .backgroundColor(this.currentPeriod === 'year' ? '#4CAF50' : '#f0f0f0')
-          .fontColor(this.currentPeriod === 'year' ? '#ffffff' : '#666666')
-          .margin({ left: 8 })
+          .height(36)
+          .padding({ left: 16, right: 16 })
+          .backgroundColor(this.currentPeriod === 'year' ? $r('app.color.primary_color') : $r('app.color.button_secondary_bg'))
+          .fontColor(this.currentPeriod === 'year' ? '#FFFFFF' : $r('app.color.button_secondary_text'))
+          .borderRadius(18)
           .onClick(() => {
             this.currentPeriod = 'year';
             this.loadData();
@@ -205,7 +209,7 @@ export struct BudgetPage {
       }
       .width('100%')
       .padding(16)
-      .backgroundColor('#ffffff')
+      .backgroundColor($r('app.color.background_primary'))
 
       // 预算列表
       if (this.budgetViewModels.length > 0) {
@@ -219,51 +223,51 @@ export struct BudgetPage {
         }
         .width('100%')
         .layoutWeight(1)
-        .padding({ left: 16, right: 16, top: 16, bottom: 16 })
-        .backgroundColor('#f5f5f5')
+        .padding({ left: 16, right: 16, top: 12, bottom: 16 })
+        .backgroundColor($r('app.color.background_secondary'))
       } else {
         // 空状态
         Column() {
           Text('暂无预算')
             .fontSize(16)
-            .fontColor('#999999')
+            .fontColor($r('app.color.text_tertiary'))
             .margin({ top: 100 })
           Text('点击右上角按钮添加预算')
             .fontSize(14)
-            .fontColor('#cccccc')
+            .fontColor($r('app.color.text_disabled'))
             .margin({ top: 8 })
         }
         .width('100%')
         .layoutWeight(1)
         .justifyContent(FlexAlign.Start)
         .alignItems(HorizontalAlign.Center)
-        .backgroundColor('#f5f5f5')
+        .backgroundColor($r('app.color.background_secondary'))
       }
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#f5f5f5')
+    .backgroundColor($r('app.color.background_secondary'))
   }
 
   @Builder
   BudgetItem(viewModel: BudgetViewModel) {
-    Column() {
+    Column({ space: 12 }) {
       // 标题行
       Row() {
         Text(viewModel.categoryName)
           .fontSize(16)
           .fontWeight(FontWeight.Medium)
-          .fontColor('#1a1a1a')
+          .fontColor($r('app.color.text_primary'))
 
         Blank()
 
         if (viewModel.budget.type === 'global') {
           Text('总')
             .fontSize(12)
-            .fontColor('#999999')
-            .padding({ left: 6, right: 6, top: 2, bottom: 2 })
-            .backgroundColor('#f0f0f0')
-            .borderRadius(4)
+            .fontColor($r('app.color.text_tertiary'))
+            .padding({ left: 8, right: 8, top: 3, bottom: 3 })
+            .backgroundColor($r('app.color.button_secondary_bg'))
+            .borderRadius(6)
         }
       }
       .width('100%')
@@ -273,30 +277,29 @@ export struct BudgetPage {
         // 背景条
         Row()
           .width('100%')
-          .height(8)
-          .backgroundColor('#f0f0f0')
-          .borderRadius(4)
+          .height(10)
+          .backgroundColor($r('app.color.button_secondary_bg'))
+          .borderRadius(5)
 
         // 进度条
         Row()
           .width(`${Math.min(viewModel.percentage, 100)}%`)
-          .height(8)
+          .height(10)
           .backgroundColor(this.getStatusColor(viewModel.status))
-          .borderRadius(4)
+          .borderRadius(5)
       }
       .width('100%')
-      .margin({ top: 12, bottom: 8 })
 
       // 金额和百分比
       Row() {
         Text(`${this.currencySymbol}${(viewModel.spent / 100).toFixed(2)} / ${this.currencySymbol}${(viewModel.budget.amount / 100).toFixed(2)}`)
           .fontSize(14)
-          .fontColor('#666666')
+          .fontColor($r('app.color.text_secondary'))
 
         Blank()
 
         Text(`${viewModel.percentage.toFixed(1)}%`)
-          .fontSize(14)
+          .fontSize(15)
           .fontWeight(FontWeight.Bold)
           .fontColor(this.getStatusColor(viewModel.status))
       }
@@ -306,21 +309,20 @@ export struct BudgetPage {
       if (viewModel.status === 'danger') {
         Text('已超支！')
           .fontSize(12)
-          .fontColor('#F44336')
-          .margin({ top: 8 })
+          .fontColor($r('app.color.accent_danger'))
           .width('100%')
       } else if (viewModel.status === 'warning') {
         Text('接近预算上限')
           .fontSize(12)
-          .fontColor('#FF9800')
-          .margin({ top: 8 })
+          .fontColor($r('app.color.accent_warning'))
           .width('100%')
       }
     }
     .width('100%')
     .padding(16)
-    .backgroundColor('#ffffff')
-    .borderRadius(8)
+    .backgroundColor($r('app.color.card_background'))
+    .borderRadius(12)
+    .shadow({ radius: 4, color: $r('app.color.shadow_light'), offsetY: 2 })
     .onClick(() => this.navigateToEdit(viewModel.budget.id))
   }
 
@@ -329,11 +331,12 @@ export struct BudgetPage {
     Button() {
       Text('删除')
         .fontSize(16)
-        .fontColor('#ffffff')
+        .fontColor('#FFFFFF')
     }
     .width(80)
     .height('100%')
-    .backgroundColor('#F44336')
+    .backgroundColor($r('app.color.accent_danger'))
+    .borderRadius(12)
     .onClick(() => this.deleteBudget(id))
   }
 }

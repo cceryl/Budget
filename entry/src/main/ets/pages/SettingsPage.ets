@@ -17,26 +17,26 @@ struct SettingItemView {
     Row() {
       Text(this.title)
         .fontSize(16)
-        .fontColor('#1a1a1a')
+        .fontColor($r('app.color.text_primary'))
         .layoutWeight(1)
 
       if (this.value !== '') {
         Text(this.value)
           .fontSize(14)
-          .fontColor('#999999')
+          .fontColor($r('app.color.text_tertiary'))
           .margin({ right: 8 })
       }
 
       if (this.onItemClick !== null) {
         Text('›')
           .fontSize(20)
-          .fontColor('#cccccc')
+          .fontColor($r('app.color.text_disabled'))
       }
     }
     .width('100%')
     .height(56)
     .padding({ left: 16, right: 16 })
-    .backgroundColor('#ffffff')
+    .backgroundColor($r('app.color.card_background'))
     .onClick(() => {
       if (this.onItemClick !== null) {
         this.onItemClick();
@@ -57,13 +57,13 @@ struct SettingItemDangerView {
     Row() {
       Text(this.title)
         .fontSize(16)
-        .fontColor('#F44336')
+        .fontColor($r('app.color.accent_danger'))
         .layoutWeight(1)
     }
     .width('100%')
     .height(56)
     .padding({ left: 16, right: 16 })
-    .backgroundColor('#ffffff')
+    .backgroundColor($r('app.color.card_background'))
     .onClick(this.onItemClick)
   }
 }
@@ -249,14 +249,14 @@ export struct SettingsPage {
       // 标题栏
       Row() {
         Text('设置')
-          .fontSize(24)
+          .fontSize(26)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#1a1a1a')
+          .fontColor($r('app.color.text_primary'))
       }
       .width('100%')
-      .height(56)
-      .padding({ left: 16, right: 16 })
-      .backgroundColor('#ffffff')
+      .height(64)
+      .padding({ left: 20, right: 20 })
+      .backgroundColor($r('app.color.background_primary'))
 
       // 设置内容
       List({ space: 1 }) {
@@ -361,8 +361,8 @@ export struct SettingsPage {
       }
       .width('100%')
       .layoutWeight(1)
-      .backgroundColor('#f5f5f5')
-      .divider({ strokeWidth: 1, color: '#f0f0f0' })
+      .backgroundColor($r('app.color.background_secondary'))
+      .divider({ strokeWidth: 1, color: $r('app.color.divider') })
 
       // 主题选择对话框
       if (this.showThemeDialog) {
@@ -391,17 +391,17 @@ export struct SettingsPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#f5f5f5')
+    .backgroundColor($r('app.color.background_secondary'))
   }
 
   @Builder
   GroupHeader(title: string) {
     Text(title)
-      .fontSize(14)
-      .fontColor('#999999')
-      .fontWeight(FontWeight.Bold)
-      .padding({ left: 16, top: 16, bottom: 8 })
-      .backgroundColor('#f5f5f5')
+      .fontSize(13)
+      .fontColor($r('app.color.text_tertiary'))
+      .fontWeight(FontWeight.Medium)
+      .padding({ left: 16, top: 20, bottom: 10 })
+      .backgroundColor($r('app.color.background_secondary'))
   }
 
   @Builder
@@ -411,7 +411,7 @@ export struct SettingsPage {
       Column()
         .width('100%')
         .height('100%')
-        .backgroundColor('#000000')
+        .backgroundColor($r('app.color.overlay_background'))
         .opacity(0.5)
         .onClick(() => {
           this.showThemeDialog = false;
@@ -422,11 +422,11 @@ export struct SettingsPage {
         Text('选择主题')
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#1a1a1a')
+          .fontColor($r('app.color.text_primary'))
           .width('100%')
           .padding({ bottom: 16 })
           .borderWidth({ bottom: 1 })
-          .borderColor('#f0f0f0')
+          .borderColor($r('app.color.divider'))
 
         // 选项列表
         Column() {
@@ -455,16 +455,18 @@ export struct SettingsPage {
           .width('100%')
           .height(44)
           .margin({ top: 16 })
-          .backgroundColor('#f0f0f0')
-          .fontColor('#666666')
+          .backgroundColor($r('app.color.button_secondary_bg'))
+          .fontColor($r('app.color.button_secondary_text'))
+          .borderRadius(12)
           .onClick(() => {
             this.showThemeDialog = false;
           })
       }
       .width('80%')
       .padding(16)
-      .backgroundColor('#ffffff')
-      .borderRadius(12)
+      .backgroundColor($r('app.color.card_background'))
+      .borderRadius(16)
+      .shadow({ radius: 16, color: $r('app.color.shadow_medium'), offsetY: 8 })
       .position({ x: '10%', y: '30%' })
     }
     .width('100%')
@@ -480,7 +482,7 @@ export struct SettingsPage {
       Column()
         .width('100%')
         .height('100%')
-        .backgroundColor('#000000')
+        .backgroundColor($r('app.color.overlay_background'))
         .opacity(0.5)
         .onClick(() => {
           this.showCurrencyDialog = false;
@@ -491,11 +493,11 @@ export struct SettingsPage {
         Text('选择货币单位')
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#1a1a1a')
+          .fontColor($r('app.color.text_primary'))
           .width('100%')
           .padding({ bottom: 16 })
           .borderWidth({ bottom: 1 })
-          .borderColor('#f0f0f0')
+          .borderColor($r('app.color.divider'))
 
         // 选项列表
         Column() {
@@ -530,16 +532,18 @@ export struct SettingsPage {
           .width('100%')
           .height(44)
           .margin({ top: 16 })
-          .backgroundColor('#f0f0f0')
-          .fontColor('#666666')
+          .backgroundColor($r('app.color.button_secondary_bg'))
+          .fontColor($r('app.color.button_secondary_text'))
+          .borderRadius(12)
           .onClick(() => {
             this.showCurrencyDialog = false;
           })
       }
       .width('80%')
       .padding(16)
-      .backgroundColor('#ffffff')
-      .borderRadius(12)
+      .backgroundColor($r('app.color.card_background'))
+      .borderRadius(16)
+      .shadow({ radius: 16, color: $r('app.color.shadow_medium'), offsetY: 8 })
       .position({ x: '10%', y: '25%' })
     }
     .width('100%')
@@ -555,7 +559,7 @@ export struct SettingsPage {
       Column()
         .width('100%')
         .height('100%')
-        .backgroundColor('#000000')
+        .backgroundColor($r('app.color.overlay_background'))
         .opacity(0.5)
         .onClick(() => {
           this.showDefaultPageDialog = false;
@@ -566,11 +570,11 @@ export struct SettingsPage {
         Text('选择默认页面')
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#1a1a1a')
+          .fontColor($r('app.color.text_primary'))
           .width('100%')
           .padding({ bottom: 16 })
           .borderWidth({ bottom: 1 })
-          .borderColor('#f0f0f0')
+          .borderColor($r('app.color.divider'))
 
         // 选项列表
         Column() {
@@ -624,7 +628,7 @@ export struct SettingsPage {
       Column()
         .width('100%')
         .height('100%')
-        .backgroundColor('#000000')
+        .backgroundColor($r('app.color.overlay_background'))
         .opacity(0.5)
         .onClick(() => {
           this.showAboutDialog = false;
@@ -635,18 +639,18 @@ export struct SettingsPage {
         Text('关于')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#1a1a1a')
+          .fontColor($r('app.color.text_primary'))
           .margin({ bottom: 20 })
 
         Text('记账本')
           .fontSize(24)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#4CAF50')
+          .fontColor($r('app.color.primary_color'))
           .margin({ bottom: 8 })
 
         Text('版本 v1.0.0')
           .fontSize(14)
-          .fontColor('#999999')
+          .fontColor($r('app.color.text_tertiary'))
           .margin({ bottom: 20 })
 
         Divider()
@@ -654,13 +658,13 @@ export struct SettingsPage {
 
         Text('一款简洁实用的个人记账应用')
           .fontSize(14)
-          .fontColor('#666666')
+          .fontColor($r('app.color.text_secondary'))
           .textAlign(TextAlign.Center)
           .margin({ bottom: 10 })
 
         Text('帮助您轻松管理个人财务')
           .fontSize(14)
-          .fontColor('#666666')
+          .fontColor($r('app.color.text_secondary'))
           .textAlign(TextAlign.Center)
           .margin({ bottom: 20 })
 
@@ -670,28 +674,30 @@ export struct SettingsPage {
         Text('开发团队')
           .fontSize(16)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#1a1a1a')
+          .fontColor($r('app.color.text_primary'))
           .margin({ bottom: 8 })
 
         Text('开源项目 • MIT License')
           .fontSize(12)
-          .fontColor('#999999')
+          .fontColor($r('app.color.text_tertiary'))
           .margin({ bottom: 20 })
 
         // 关闭按钮
         Button('关闭')
           .width('100%')
           .height(44)
-          .backgroundColor('#4CAF50')
-          .fontColor('#ffffff')
+          .backgroundColor($r('app.color.primary_color'))
+          .fontColor('#FFFFFF')
+          .borderRadius(12)
           .onClick(() => {
             this.showAboutDialog = false;
           })
       }
       .width('80%')
       .padding(24)
-      .backgroundColor('#ffffff')
-      .borderRadius(12)
+      .backgroundColor($r('app.color.card_background'))
+      .borderRadius(16)
+      .shadow({ radius: 16, color: $r('app.color.shadow_medium'), offsetY: 8 })
       .position({ x: '10%', y: '20%' })
     }
     .width('100%')
@@ -707,7 +713,7 @@ export struct SettingsPage {
       Column()
         .width('100%')
         .height('100%')
-        .backgroundColor('#000000')
+        .backgroundColor($r('app.color.overlay_background'))
         .opacity(0.5)
         .onClick(() => {
           this.showConfirmClearDialog = false;
@@ -718,35 +724,35 @@ export struct SettingsPage {
         Text('⚠️ 警告')
           .fontSize(20)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#F44336')
+          .fontColor($r('app.color.accent_danger'))
           .margin({ bottom: 16 })
 
         Text('此操作将清空所有数据，包括：')
           .fontSize(16)
-          .fontColor('#1a1a1a')
+          .fontColor($r('app.color.text_primary'))
           .margin({ bottom: 12 })
 
         Text('• 所有交易记录')
           .fontSize(14)
-          .fontColor('#666666')
+          .fontColor($r('app.color.text_secondary'))
           .width('100%')
           .margin({ bottom: 4 })
 
         Text('• 自定义分类')
           .fontSize(14)
-          .fontColor('#666666')
+          .fontColor($r('app.color.text_secondary'))
           .width('100%')
           .margin({ bottom: 4 })
 
         Text('• 预算设置')
           .fontSize(14)
-          .fontColor('#666666')
+          .fontColor($r('app.color.text_secondary'))
           .width('100%')
           .margin({ bottom: 16 })
 
         Text('此操作不可恢复，是否继续？')
           .fontSize(14)
-          .fontColor('#F44336')
+          .fontColor($r('app.color.accent_danger'))
           .fontWeight(FontWeight.Bold)
           .margin({ bottom: 20 })
 
@@ -755,8 +761,9 @@ export struct SettingsPage {
           Button('取消')
             .width('48%')
             .height(44)
-            .backgroundColor('#f0f0f0')
-            .fontColor('#666666')
+            .backgroundColor($r('app.color.button_secondary_bg'))
+            .fontColor($r('app.color.button_secondary_text'))
+            .borderRadius(12)
             .onClick(() => {
               this.showConfirmClearDialog = false;
             })
@@ -764,8 +771,9 @@ export struct SettingsPage {
           Button('确认清空')
             .width('48%')
             .height(44)
-            .backgroundColor('#F44336')
-            .fontColor('#ffffff')
+            .backgroundColor($r('app.color.accent_danger'))
+            .fontColor('#FFFFFF')
+            .borderRadius(12)
             .onClick(() => {
               this.confirmClearData();
             })
@@ -775,8 +783,9 @@ export struct SettingsPage {
       }
       .width('85%')
       .padding(24)
-      .backgroundColor('#ffffff')
-      .borderRadius(12)
+      .backgroundColor($r('app.color.card_background'))
+      .borderRadius(16)
+      .shadow({ radius: 16, color: $r('app.color.shadow_medium'), offsetY: 8 })
       .position({ x: '7.5%', y: '25%' })
     }
     .width('100%')
@@ -790,14 +799,14 @@ export struct SettingsPage {
     Row() {
       Text(title)
         .fontSize(16)
-        .fontColor(isSelected ? '#4CAF50' : '#1a1a1a')
+        .fontColor(isSelected ? $r('app.color.primary_color') : $r('app.color.text_primary'))
         .fontWeight(isSelected ? FontWeight.Bold : FontWeight.Normal)
         .layoutWeight(1)
 
       if (isSelected) {
         Text('✓')
           .fontSize(18)
-          .fontColor('#4CAF50')
+          .fontColor($r('app.color.primary_color'))
       }
     }
     .width('100%')

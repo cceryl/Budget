@@ -334,22 +334,24 @@ export struct StatisticsPage {
       // 标题栏
       Row() {
         Text(this.getPeriodText())
-          .fontSize(24)
+          .fontSize(26)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#1a1a1a')
+          .fontColor($r('app.color.text_primary'))
       }
       .width('100%')
-      .height(56)
-      .padding({ left: 16, right: 16 })
-      .backgroundColor('#ffffff')
+      .height(64)
+      .padding({ left: 20, right: 20 })
+      .backgroundColor($r('app.color.background_primary'))
 
       // 周期选择器
-      Row() {
+      Row({ space: 12 }) {
         Button('周')
           .fontSize(14)
-          .height(32)
-          .backgroundColor(this.currentPeriod === 'week' ? '#4CAF50' : '#f0f0f0')
-          .fontColor(this.currentPeriod === 'week' ? '#ffffff' : '#666666')
+          .height(36)
+          .padding({ left: 16, right: 16 })
+          .backgroundColor(this.currentPeriod === 'week' ? $r('app.color.primary_color') : $r('app.color.button_secondary_bg'))
+          .fontColor(this.currentPeriod === 'week' ? '#FFFFFF' : $r('app.color.button_secondary_text'))
+          .borderRadius(18)
           .onClick(() => {
             this.currentPeriod = 'week';
             this.loadData();
@@ -357,10 +359,11 @@ export struct StatisticsPage {
 
         Button('月')
           .fontSize(14)
-          .height(32)
-          .backgroundColor(this.currentPeriod === 'month' ? '#4CAF50' : '#f0f0f0')
-          .fontColor(this.currentPeriod === 'month' ? '#ffffff' : '#666666')
-          .margin({ left: 8 })
+          .height(36)
+          .padding({ left: 16, right: 16 })
+          .backgroundColor(this.currentPeriod === 'month' ? $r('app.color.primary_color') : $r('app.color.button_secondary_bg'))
+          .fontColor(this.currentPeriod === 'month' ? '#FFFFFF' : $r('app.color.button_secondary_text'))
+          .borderRadius(18)
           .onClick(() => {
             this.currentPeriod = 'month';
             this.loadData();
@@ -368,10 +371,11 @@ export struct StatisticsPage {
 
         Button('年')
           .fontSize(14)
-          .height(32)
-          .backgroundColor(this.currentPeriod === 'year' ? '#4CAF50' : '#f0f0f0')
-          .fontColor(this.currentPeriod === 'year' ? '#ffffff' : '#666666')
-          .margin({ left: 8 })
+          .height(36)
+          .padding({ left: 16, right: 16 })
+          .backgroundColor(this.currentPeriod === 'year' ? $r('app.color.primary_color') : $r('app.color.button_secondary_bg'))
+          .fontColor(this.currentPeriod === 'year' ? '#FFFFFF' : $r('app.color.button_secondary_text'))
+          .borderRadius(18)
           .onClick(() => {
             this.currentPeriod = 'year';
             this.loadData();
@@ -379,7 +383,7 @@ export struct StatisticsPage {
       }
       .width('100%')
       .padding(16)
-      .backgroundColor('#ffffff')
+      .backgroundColor($r('app.color.background_primary'))
 
       // 滚动内容区
       Scroll() {
@@ -397,11 +401,11 @@ export struct StatisticsPage {
       }
       .width('100%')
       .layoutWeight(1)
-      .backgroundColor('#f5f5f5')
+      .backgroundColor($r('app.color.background_secondary'))
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#f5f5f5')
+    .backgroundColor($r('app.color.background_secondary'))
   }
 
   /**
@@ -413,75 +417,73 @@ export struct StatisticsPage {
       Text('总览')
         .fontSize(18)
         .fontWeight(FontWeight.Bold)
-        .fontColor('#1a1a1a')
+        .fontColor($r('app.color.text_primary'))
         .width('100%')
-        .margin({ bottom: 12 })
+        .margin({ bottom: 16 })
 
       // 三个指标卡片
-      Row() {
+      Row({ space: 12 }) {
         // 收入
-        Column() {
+        Column({ space: 8 }) {
           Text('收入')
-            .fontSize(14)
-            .fontColor('#666666')
-            .margin({ bottom: 8 })
+            .fontSize(13)
+            .fontColor($r('app.color.text_secondary'))
           Text(`${this.currencySymbol}${(this.totalIncome / 100).toFixed(2)}`)
             .fontSize(this.calculateAmountFontSize(this.totalIncome))
             .fontWeight(FontWeight.Bold)
-            .fontColor('#4CAF50')
+            .fontColor($r('app.color.income_color'))
             .maxLines(1)
             .height(32)
             .width('100%')
             .textAlign(TextAlign.Center)
         }
         .layoutWeight(1)
-        .padding(16)
-        .backgroundColor('#ffffff')
-        .borderRadius(8)
+        .padding(14)
+        .backgroundColor($r('app.color.card_background'))
+        .borderRadius(12)
+        .shadow({ radius: 4, color: $r('app.color.shadow_light'), offsetY: 2 })
         .alignItems(HorizontalAlign.Center)
 
         // 支出
-        Column() {
+        Column({ space: 8 }) {
           Text('支出')
-            .fontSize(14)
-            .fontColor('#666666')
-            .margin({ bottom: 8 })
+            .fontSize(13)
+            .fontColor($r('app.color.text_secondary'))
           Text(`${this.currencySymbol}${(this.totalExpense / 100).toFixed(2)}`)
             .fontSize(this.calculateAmountFontSize(this.totalExpense))
             .fontWeight(FontWeight.Bold)
-            .fontColor('#F44336')
+            .fontColor($r('app.color.expense_color'))
             .maxLines(1)
             .height(32)
             .width('100%')
             .textAlign(TextAlign.Center)
         }
         .layoutWeight(1)
-        .padding(16)
-        .backgroundColor('#ffffff')
-        .borderRadius(8)
-        .margin({ left: 8 })
+        .padding(14)
+        .backgroundColor($r('app.color.card_background'))
+        .borderRadius(12)
+        .shadow({ radius: 4, color: $r('app.color.shadow_light'), offsetY: 2 })
         .alignItems(HorizontalAlign.Center)
 
         // 结余
-        Column() {
+        Column({ space: 8 }) {
           Text('结余')
-            .fontSize(14)
-            .fontColor('#666666')
-            .margin({ bottom: 8 })
+            .fontSize(13)
+            .fontColor($r('app.color.text_secondary'))
           Text(`${this.currencySymbol}${(this.balance / 100).toFixed(2)}`)
             .fontSize(this.calculateAmountFontSize(this.balance))
             .fontWeight(FontWeight.Bold)
-            .fontColor(this.balance >= 0 ? '#4CAF50' : '#F44336')
+            .fontColor(this.balance >= 0 ? $r('app.color.income_color') : $r('app.color.expense_color'))
             .maxLines(1)
             .height(32)
             .width('100%')
             .textAlign(TextAlign.Center)
         }
         .layoutWeight(1)
-        .padding(16)
-        .backgroundColor('#ffffff')
-        .borderRadius(8)
-        .margin({ left: 8 })
+        .padding(14)
+        .backgroundColor($r('app.color.card_background'))
+        .borderRadius(12)
+        .shadow({ radius: 4, color: $r('app.color.shadow_light'), offsetY: 2 })
         .alignItems(HorizontalAlign.Center)
       }
       .width('100%')
@@ -501,36 +503,37 @@ export struct StatisticsPage {
         Text('分类统计')
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#1a1a1a')
+          .fontColor($r('app.color.text_primary'))
 
         Blank()
 
         // 收入/支出切换
-        Row() {
+        Row({ space: 8 }) {
           Button('支出')
             .fontSize(12)
-            .height(28)
-            .padding({ left: 12, right: 12 })
-            .backgroundColor(!this.showIncomeStats ? '#4CAF50' : '#f0f0f0')
-            .fontColor(!this.showIncomeStats ? '#ffffff' : '#666666')
+            .height(32)
+            .padding({ left: 14, right: 14 })
+            .backgroundColor(!this.showIncomeStats ? $r('app.color.primary_color') : $r('app.color.button_secondary_bg'))
+            .fontColor(!this.showIncomeStats ? '#FFFFFF' : $r('app.color.button_secondary_text'))
+            .borderRadius(16)
             .onClick(() => {
               this.showIncomeStats = false;
             })
 
           Button('收入')
             .fontSize(12)
-            .height(28)
-            .padding({ left: 12, right: 12 })
-            .backgroundColor(this.showIncomeStats ? '#4CAF50' : '#f0f0f0')
-            .fontColor(this.showIncomeStats ? '#ffffff' : '#666666')
-            .margin({ left: 8 })
+            .height(32)
+            .padding({ left: 14, right: 14 })
+            .backgroundColor(this.showIncomeStats ? $r('app.color.primary_color') : $r('app.color.button_secondary_bg'))
+            .fontColor(this.showIncomeStats ? '#FFFFFF' : $r('app.color.button_secondary_text'))
+            .borderRadius(16)
             .onClick(() => {
               this.showIncomeStats = true;
             })
         }
       }
       .width('100%')
-      .margin({ bottom: 12 })
+      .margin({ bottom: 16 })
 
       // 饼图（简化版 - 使用圆环图）
       if (this.showIncomeStats) {
@@ -557,8 +560,9 @@ export struct StatisticsPage {
     .width('100%')
     .padding(16)
     .margin({ top: 8 })
-    .backgroundColor('#ffffff')
-    .borderRadius(8)
+    .backgroundColor($r('app.color.card_background'))
+    .borderRadius(12)
+    .shadow({ radius: 4, color: $r('app.color.shadow_light'), offsetY: 2 })
   }
 
   /**
@@ -631,30 +635,30 @@ export struct StatisticsPage {
       Text('详细列表')
         .fontSize(16)
         .fontWeight(FontWeight.Medium)
-        .fontColor('#1a1a1a')
+        .fontColor($r('app.color.text_primary'))
         .width('100%')
-        .margin({ top: 16, bottom: 12 })
+        .margin({ top: 20, bottom: 14 })
 
       ForEach(categories, (cat: CategoryStatViewModel) => {
-        Column() {
+        Column({ space: 8 }) {
           Row() {
             Row()
               .width(4)
               .height(16)
               .backgroundColor(cat.color)
               .borderRadius(2)
-              .margin({ right: 8 })
+              .margin({ right: 10 })
 
             Text(cat.categoryName)
               .fontSize(15)
-              .fontColor('#1a1a1a')
+              .fontColor($r('app.color.text_primary'))
 
             Blank()
 
             Text(`${this.currencySymbol}${(cat.amount / 100).toFixed(2)}`)
               .fontSize(15)
               .fontWeight(FontWeight.Medium)
-              .fontColor('#1a1a1a')
+              .fontColor($r('app.color.text_primary'))
           }
           .width('100%')
 
@@ -663,7 +667,7 @@ export struct StatisticsPage {
             Row()
               .width('100%')
               .height(6)
-              .backgroundColor('#f0f0f0')
+              .backgroundColor($r('app.color.button_secondary_bg'))
               .borderRadius(3)
 
             Row()
@@ -673,17 +677,16 @@ export struct StatisticsPage {
               .borderRadius(3)
           }
           .width('100%')
-          .margin({ top: 8, bottom: 4 })
 
           Text(`${cat.percentage.toFixed(1)}%`)
             .fontSize(12)
-            .fontColor('#999999')
+            .fontColor($r('app.color.text_tertiary'))
             .width('100%')
         }
         .width('100%')
         .padding({ top: 12, bottom: 12 })
         .borderWidth({ bottom: 1 })
-        .borderColor('#f5f5f5')
+        .borderColor($r('app.color.divider'))
       }, (cat: CategoryStatViewModel) => cat.categoryId)
     }
     .width('100%')
@@ -700,18 +703,19 @@ export struct StatisticsPage {
         Text('趋势分析')
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#1a1a1a')
+          .fontColor($r('app.color.text_primary'))
 
         Blank()
 
         // 收入/支出切换
-        Row() {
+        Row({ space: 8 }) {
           Button('支出')
             .fontSize(12)
-            .height(28)
-            .padding({ left: 12, right: 12 })
-            .backgroundColor(!this.showIncomeTrend ? '#4CAF50' : '#f0f0f0')
-            .fontColor(!this.showIncomeTrend ? '#ffffff' : '#666666')
+            .height(32)
+            .padding({ left: 14, right: 14 })
+            .backgroundColor(!this.showIncomeTrend ? $r('app.color.primary_color') : $r('app.color.button_secondary_bg'))
+            .fontColor(!this.showIncomeTrend ? '#FFFFFF' : $r('app.color.button_secondary_text'))
+            .borderRadius(16)
             .onClick(() => {
               this.showIncomeTrend = false;
               this.loadData();
@@ -719,11 +723,11 @@ export struct StatisticsPage {
 
           Button('收入')
             .fontSize(12)
-            .height(28)
-            .padding({ left: 12, right: 12 })
-            .backgroundColor(this.showIncomeTrend ? '#4CAF50' : '#f0f0f0')
-            .fontColor(this.showIncomeTrend ? '#ffffff' : '#666666')
-            .margin({ left: 8 })
+            .height(32)
+            .padding({ left: 14, right: 14 })
+            .backgroundColor(this.showIncomeTrend ? $r('app.color.primary_color') : $r('app.color.button_secondary_bg'))
+            .fontColor(this.showIncomeTrend ? '#FFFFFF' : $r('app.color.button_secondary_text'))
+            .borderRadius(16)
             .onClick(() => {
               this.showIncomeTrend = true;
               this.loadData();
@@ -731,7 +735,7 @@ export struct StatisticsPage {
         }
       }
       .width('100%')
-      .margin({ bottom: 12 })
+      .margin({ bottom: 16 })
 
       if (this.trendData.length > 0) {
         this.SimpleTrendChart()
@@ -742,8 +746,9 @@ export struct StatisticsPage {
     .width('100%')
     .padding(16)
     .margin({ top: 8, bottom: 16 })
-    .backgroundColor('#ffffff')
-    .borderRadius(8)
+    .backgroundColor($r('app.color.card_background'))
+    .borderRadius(12)
+    .shadow({ radius: 4, color: $r('app.color.shadow_light'), offsetY: 2 })
   }
 
   /**
@@ -789,7 +794,7 @@ export struct StatisticsPage {
         this.EmptyDataPlaceholder(this.showIncomeTrend ? '暂无收入数据' : '暂无支出数据')
       } else {
         // 柱状图
-        Row({ space: 1 }) {
+        Row({ space: 2 }) {
           ForEach(this.trendData, (point: TrendDataPoint) => {
             Column() {
               // 柱子容器（固定高度区域）
@@ -797,20 +802,19 @@ export struct StatisticsPage {
                 Column()
                   .width('100%')
                   .height(point.amount > 0 ? `${(point.amount / this.getMaxTrendAmount()) * 100}%` : '2%')
-                  .backgroundColor(this.showIncomeTrend ? '#4CAF50' : '#36A2EB')
-                  .borderRadius(4)
+                  .backgroundColor(this.showIncomeTrend ? $r('app.color.income_color') : $r('app.color.accent_info'))
+                  .borderRadius(5)
               }
               .width('100%')
-              .height(160)
+              .height(170)
               .justifyContent(FlexAlign.End)
 
               // 日期标签容器
               Stack() {
-                // 只在1号和被5整除的日期显示标签
                 if (this.shouldShowDateLabel(point.date)) {
                   Text(point.date)
                     .fontSize(10)
-                    .fontColor('#999999')
+                    .fontColor($r('app.color.text_tertiary'))
                     .textAlign(TextAlign.Center)
                     .maxLines(1)
                     .textOverflow({ overflow: TextOverflow.None })
@@ -819,7 +823,7 @@ export struct StatisticsPage {
               }
               .width('200%')
               .height(24)
-              .margin({ top: 4 })
+              .margin({ top: 6 })
               .clip(false)
             }
             .layoutWeight(1)
@@ -829,28 +833,25 @@ export struct StatisticsPage {
         }
         .width('100%')
         .margin({ top: 16 })
-        .height(188)
+        .height(200)
 
         // 显示最大值参考
         Text(`最高: ${this.currencySymbol}${(this.getMaxTrendAmount() / 100).toFixed(2)}`)
           .fontSize(12)
-          .fontColor('#999999')
-          .margin({ top: 8 })
+          .fontColor($r('app.color.text_tertiary'))
+          .margin({ top: 12 })
           .width('100%')
       }
     }
     .width('100%')
   }
 
-  /**
-   * 空数据占位符
-   */
   @Builder
   EmptyDataPlaceholder(message: string) {
     Column() {
       Text(message)
         .fontSize(14)
-        .fontColor('#999999')
+        .fontColor($r('app.color.text_tertiary'))
         .margin({ top: 40, bottom: 40 })
     }
     .width('100%')

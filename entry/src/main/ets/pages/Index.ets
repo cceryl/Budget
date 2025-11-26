@@ -40,7 +40,7 @@ struct Index {
 
   build() {
     Stack({ alignContent: Alignment.Bottom }) {
-      // 主内容区（使用Stack让内容填充整个空间）
+      // 主内容区
       Column() {
         if (this.currentTab === 'details') {
           TransactionListPage({ refreshTrigger: this.refreshKey })
@@ -54,100 +54,99 @@ struct Index {
       }
       .width('100%')
       .height('100%')
-      .padding({ bottom: 64 })
+      .padding({ bottom: 72 })
+      .backgroundColor($r('app.color.background_secondary'))
 
-      // 底部导航区域（固定在底部）
+      // 底部导航栏
       Column() {
         Row() {
           // 明细
-          Column() {
-            Text('📊')
-              .fontSize(20)
-              .margin({ bottom: 4 })
+          Column({ space: 4 }) {
+            Image($r('app.media.icon_list'))
+              .width(24)
+              .height(24)
+              .fillColor(this.currentTab === 'details' ? $r('app.color.tab_active') : $r('app.color.tab_inactive'))
             Text('明细')
-              .fontSize(12)
-              .fontColor(this.currentTab === 'details' ? '#4CAF50' : '#999999')
+              .fontSize(11)
+              .fontColor(this.currentTab === 'details' ? $r('app.color.tab_active') : $r('app.color.tab_inactive'))
+              .fontWeight(this.currentTab === 'details' ? FontWeight.Medium : FontWeight.Regular)
           }
           .width('20%')
+          .height('100%')
           .justifyContent(FlexAlign.Center)
-          .alignItems(HorizontalAlign.Center)
-          .padding({ top: 8, bottom: 8 })
           .onClick(() => { this.currentTab = 'details'; })
 
           // 统计
-          Column() {
-            Text('📈')
-              .fontSize(20)
-              .margin({ bottom: 4 })
+          Column({ space: 4 }) {
+            Image($r('app.media.icon_chart'))
+              .width(24)
+              .height(24)
+              .fillColor(this.currentTab === 'stats' ? $r('app.color.tab_active') : $r('app.color.tab_inactive'))
             Text('统计')
-              .fontSize(12)
-              .fontColor(this.currentTab === 'stats' ? '#4CAF50' : '#999999')
+              .fontSize(11)
+              .fontColor(this.currentTab === 'stats' ? $r('app.color.tab_active') : $r('app.color.tab_inactive'))
+              .fontWeight(this.currentTab === 'stats' ? FontWeight.Medium : FontWeight.Regular)
           }
           .width('20%')
+          .height('100%')
           .justifyContent(FlexAlign.Center)
-          .alignItems(HorizontalAlign.Center)
-          .padding({ top: 8, bottom: 8 })
           .onClick(() => { this.currentTab = 'stats'; })
 
-          // 中间快捷记账占位（空列，用于居中悬浮按钮）
-          Column() {
-            Text('')
-              .fontSize(12)
-          }
-          .width('20%')
-          .justifyContent(FlexAlign.Center)
-          .alignItems(HorizontalAlign.Center)
+          // 中间占位
+          Column()
+            .width('20%')
 
           // 预算
-          Column() {
-            Text('💰')
-              .fontSize(20)
-              .margin({ bottom: 4 })
+          Column({ space: 4 }) {
+            Image($r('app.media.icon_wallet'))
+              .width(24)
+              .height(24)
+              .fillColor(this.currentTab === 'budget' ? $r('app.color.tab_active') : $r('app.color.tab_inactive'))
             Text('预算')
-              .fontSize(12)
-              .fontColor(this.currentTab === 'budget' ? '#4CAF50' : '#999999')
+              .fontSize(11)
+              .fontColor(this.currentTab === 'budget' ? $r('app.color.tab_active') : $r('app.color.tab_inactive'))
+              .fontWeight(this.currentTab === 'budget' ? FontWeight.Medium : FontWeight.Regular)
           }
           .width('20%')
+          .height('100%')
           .justifyContent(FlexAlign.Center)
-          .alignItems(HorizontalAlign.Center)
-          .padding({ top: 8, bottom: 8 })
           .onClick(() => { this.currentTab = 'budget'; })
 
           // 设置
-          Column() {
-            Text('⚙️')
-              .fontSize(20)
-              .margin({ bottom: 4 })
+          Column({ space: 4 }) {
+            Image($r('app.media.icon_settings'))
+              .width(24)
+              .height(24)
+              .fillColor(this.currentTab === 'settings' ? $r('app.color.tab_active') : $r('app.color.tab_inactive'))
             Text('设置')
-              .fontSize(12)
-              .fontColor(this.currentTab === 'settings' ? '#4CAF50' : '#999999')
+              .fontSize(11)
+              .fontColor(this.currentTab === 'settings' ? $r('app.color.tab_active') : $r('app.color.tab_inactive'))
+              .fontWeight(this.currentTab === 'settings' ? FontWeight.Medium : FontWeight.Regular)
           }
           .width('20%')
+          .height('100%')
           .justifyContent(FlexAlign.Center)
-          .alignItems(HorizontalAlign.Center)
-          .padding({ top: 8, bottom: 8 })
           .onClick(() => { this.currentTab = 'settings'; })
         }
         .width('100%')
-        .height(64)
-        .backgroundColor('#ffffff')
+        .height(72)
+        .backgroundColor($r('app.color.navbar_background'))
         .borderWidth({ top: 1 })
-        .borderColor('#f0f0f0')
-        .shadow({ radius: 4, color: '#00000010', offsetY: -2 })
+        .borderColor($r('app.color.navbar_border'))
+        .shadow({ radius: 8, color: $r('app.color.shadow_light'), offsetY: -4 })
 
-        // 底部中央快捷记账悬浮按钮
+        // 中央悬浮按钮
         Button() {
-          Text('+')
-            .fontSize(32)
-            .fontColor('#ffffff')
-            .fontWeight(FontWeight.Bold)
+          Image($r('app.media.icon_add'))
+            .width(24)
+            .height(24)
         }
-        .width(64)
-        .height(64)
-        .borderRadius(32)
-        .backgroundColor('#4CAF50')
-        .shadow({ radius: 8, color: '#00000020', offsetY: 2 })
-        .position({ x: '50%', y: 20 })
+        .width(56)
+        .height(56)
+        .borderRadius(28)
+        .backgroundColor($r('app.color.primary_color'))
+        .shadow({ radius: 12, color: $r('app.color.shadow_medium'), offsetY: 4 })
+        .position({ x: '50%', y: 24 })
         .translate({ x: '-50%', y: '-50%' })
         .onClick(() => this.navigateToEdit())
       }
@@ -155,5 +154,6 @@ struct Index {
     }
     .width('100%')
     .height('100%')
+    .backgroundColor($r('app.color.background_secondary'))
   }
 }

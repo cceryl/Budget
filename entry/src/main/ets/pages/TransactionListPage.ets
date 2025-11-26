@@ -119,31 +119,34 @@ export struct TransactionListPage {
       // 标题栏
       Row() {
         Text('记账本')
-          .fontSize(24)
+          .fontSize(26)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#1a1a1a')
+          .fontColor($r('app.color.text_primary'))
 
         Blank()
 
         Button('分类管理')
           .fontSize(14)
-          .backgroundColor('#f0f0f0')
-          .fontColor('#666666')
+          .padding({ left: 16, right: 16, top: 8, bottom: 8 })
+          .backgroundColor($r('app.color.button_secondary_bg'))
+          .fontColor($r('app.color.button_secondary_text'))
+          .borderRadius(20)
           .onClick(() => this.navigateToCategory())
       }
       .width('100%')
-      .height(56)
-      .padding({ left: 16, right: 16 })
-      .backgroundColor('#ffffff')
+      .height(64)
+      .padding({ left: 20, right: 20 })
+      .backgroundColor($r('app.color.background_primary'))
 
       // 搜索和过滤
-      Column() {
+      Column({ space: 12 }) {
         // 搜索框
         TextInput({ placeholder: '搜索交易描述...' })
           .width('100%')
-          .height(40)
-          .backgroundColor('#f5f5f5')
-          .borderRadius(8)
+          .height(44)
+          .backgroundColor($r('app.color.background_secondary'))
+          .borderRadius(12)
+          .padding({ left: 16, right: 16 })
           .onChange((value: string) => {
             this.searchText = value;
             this.applyFilter();
@@ -153,36 +156,42 @@ export struct TransactionListPage {
         Row() {
           Button('全部')
             .fontSize(14)
-            .height(32)
-            .backgroundColor(this.filterType === 'all' ? '#4CAF50' : '#f0f0f0')
-            .fontColor(this.filterType === 'all' ? '#ffffff' : '#666666')
+            .height(36)
+            .padding({ left: 16, right: 16 })
+            .backgroundColor(this.filterType === 'all' ? $r('app.color.primary_color') : $r('app.color.button_secondary_bg'))
+            .fontColor(this.filterType === 'all' ? '#FFFFFF' : $r('app.color.button_secondary_text'))
+            .borderRadius(18)
             .onClick(() => {
               this.filterType = 'all';
-              this.selectedCategoryId = 'all'; // 切换类型时重置分类过滤
+              this.selectedCategoryId = 'all';
               this.applyFilter();
             })
 
           Button('收入')
             .fontSize(14)
-            .height(32)
-            .backgroundColor(this.filterType === 'income' ? '#4CAF50' : '#f0f0f0')
-            .fontColor(this.filterType === 'income' ? '#ffffff' : '#666666')
+            .height(36)
+            .padding({ left: 16, right: 16 })
+            .backgroundColor(this.filterType === 'income' ? $r('app.color.primary_color') : $r('app.color.button_secondary_bg'))
+            .fontColor(this.filterType === 'income' ? '#FFFFFF' : $r('app.color.button_secondary_text'))
+            .borderRadius(18)
             .margin({ left: 8 })
             .onClick(() => {
               this.filterType = 'income';
-              this.selectedCategoryId = 'all'; // 切换类型时重置分类过滤
+              this.selectedCategoryId = 'all';
               this.applyFilter();
             })
 
           Button('支出')
             .fontSize(14)
-            .height(32)
-            .backgroundColor(this.filterType === 'expense' ? '#4CAF50' : '#f0f0f0')
-            .fontColor(this.filterType === 'expense' ? '#ffffff' : '#666666')
+            .height(36)
+            .padding({ left: 16, right: 16 })
+            .backgroundColor(this.filterType === 'expense' ? $r('app.color.primary_color') : $r('app.color.button_secondary_bg'))
+            .fontColor(this.filterType === 'expense' ? '#FFFFFF' : $r('app.color.button_secondary_text'))
+            .borderRadius(18)
             .margin({ left: 8 })
             .onClick(() => {
               this.filterType = 'expense';
-              this.selectedCategoryId = 'all'; // 切换类型时重置分类过滤
+              this.selectedCategoryId = 'all';
               this.applyFilter();
             })
 
@@ -190,53 +199,54 @@ export struct TransactionListPage {
 
           // 分类选择下拉菜单
           Button() {
-            Row() {
+            Row({ space: 4 }) {
               Text(this.selectedCategoryId === 'all' ? '全部分类' : this.getCategoryName(this.selectedCategoryId))
-                .fontSize(14)
-                .fontColor('#666666')
-              Text(' ▼')
-                .fontSize(12)
-                .fontColor('#999999')
+                .fontSize(13)
+                .fontColor($r('app.color.button_secondary_text'))
+              Text('▼')
+                .fontSize(10)
+                .fontColor($r('app.color.text_tertiary'))
             }
           }
-          .padding({ left: 12, right: 12 })
-          .height(32)
-          .backgroundColor('#f0f0f0')
+          .padding({ left: 14, right: 14 })
+          .height(36)
+          .backgroundColor($r('app.color.button_secondary_bg'))
+          .borderRadius(18)
           .onClick(() => {
             this.showCategorySelector = true;
           })
         }
         .width('100%')
-        .margin({ top: 12 })
       }
       .width('100%')
       .padding(16)
-      .backgroundColor('#ffffff')
+      .backgroundColor($r('app.color.background_primary'))
 
       // 交易列表
-      List({ space: 1 }) {
-        ForEach(this.filteredTransactions, (transaction: Transaction) => {
-          ListItem() {
-            this.TransactionItem(transaction)
-          }
-          .swipeAction({ end: this.DeleteButton(transaction.id) })
-        }, (transaction: Transaction) => JSON.stringify(transaction))
-      }
-      .width('100%')
-      .layoutWeight(1)
-      .backgroundColor('#f5f5f5')
-      .divider({ strokeWidth: 1, color: '#f0f0f0' })
-
-      // 空状态提示
-      if (this.filteredTransactions.length === 0) {
+      if (this.filteredTransactions.length > 0) {
+        List({ space: 12 }) {
+          ForEach(this.filteredTransactions, (transaction: Transaction) => {
+            ListItem() {
+              this.TransactionItem(transaction)
+            }
+            .swipeAction({ end: this.DeleteButton(transaction.id) })
+          }, (transaction: Transaction) => JSON.stringify(transaction))
+        }
+        .width('100%')
+        .layoutWeight(1)
+        .padding({ left: 16, right: 16, top: 12, bottom: 12 })
+        .backgroundColor($r('app.color.background_secondary'))
+      } else {
+        // 空状态提示
         Column() {
           Text('暂无交易记录')
             .fontSize(16)
-            .fontColor('#999999')
+            .fontColor($r('app.color.text_tertiary'))
             .margin({ top: 100 })
         }
         .width('100%')
         .layoutWeight(1)
+        .backgroundColor($r('app.color.background_secondary'))
       }
 
       // 分类选择器弹窗
@@ -246,7 +256,7 @@ export struct TransactionListPage {
     }
     .width('100%')
     .height('100%')
-    .backgroundColor('#f5f5f5')
+    .backgroundColor($r('app.color.background_secondary'))
   }
 
   @Builder
@@ -256,7 +266,7 @@ export struct TransactionListPage {
       Column()
         .width('100%')
         .height('100%')
-        .backgroundColor('#000000')
+        .backgroundColor($r('app.color.overlay_background'))
         .opacity(0.5)
         .onClick(() => {
           this.showCategorySelector = false;
@@ -267,11 +277,11 @@ export struct TransactionListPage {
         Text('选择分类')
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
-          .fontColor('#1a1a1a')
+          .fontColor($r('app.color.text_primary'))
           .width('100%')
           .padding({ bottom: 16 })
           .borderWidth({ bottom: 1 })
-          .borderColor('#f0f0f0')
+          .borderColor($r('app.color.divider'))
 
         // 分类列表
         List({ space: 0 }) {
@@ -280,7 +290,7 @@ export struct TransactionListPage {
             Row() {
               Text('全部分类')
                 .fontSize(16)
-                .fontColor(this.selectedCategoryId === 'all' ? '#4CAF50' : '#1a1a1a')
+                .fontColor(this.selectedCategoryId === 'all' ? $r('app.color.primary_color') : $r('app.color.text_primary'))
                 .fontWeight(this.selectedCategoryId === 'all' ? FontWeight.Bold : FontWeight.Normal)
             }
             .width('100%')
@@ -299,7 +309,7 @@ export struct TransactionListPage {
               Row() {
                 Text(category.name)
                   .fontSize(16)
-                  .fontColor(this.selectedCategoryId === category.id ? '#4CAF50' : '#1a1a1a')
+                  .fontColor(this.selectedCategoryId === category.id ? $r('app.color.primary_color') : $r('app.color.text_primary'))
                   .fontWeight(this.selectedCategoryId === category.id ? FontWeight.Bold : FontWeight.Normal)
 
                 Blank()
@@ -307,7 +317,7 @@ export struct TransactionListPage {
                 if (this.selectedCategoryId === category.id) {
                   Text('✓')
                     .fontSize(18)
-                    .fontColor('#4CAF50')
+                    .fontColor($r('app.color.primary_color'))
                 }
               }
               .width('100%')
@@ -323,15 +333,16 @@ export struct TransactionListPage {
         }
         .width('100%')
         .height(400)
-        .divider({ strokeWidth: 1, color: '#f0f0f0' })
+        .divider({ strokeWidth: 1, color: $r('app.color.divider') })
 
         // 关闭按钮
         Button('关闭')
           .width('100%')
           .height(44)
           .margin({ top: 16 })
-          .backgroundColor('#f0f0f0')
-          .fontColor('#666666')
+          .backgroundColor($r('app.color.button_secondary_bg'))
+          .fontColor($r('app.color.button_secondary_text'))
+          .borderRadius(12)
           .onClick(() => {
             this.showCategorySelector = false;
           })
@@ -339,8 +350,9 @@ export struct TransactionListPage {
       .width('80%')
       .height(500)
       .padding(16)
-      .backgroundColor('#ffffff')
-      .borderRadius(12)
+      .backgroundColor($r('app.color.card_background'))
+      .borderRadius(16)
+      .shadow({ radius: 16, color: $r('app.color.shadow_medium'), offsetY: 8 })
       .position({ x: '10%', y: '15%' })
     }
     .width('100%')
@@ -352,23 +364,21 @@ export struct TransactionListPage {
   @Builder
   TransactionItem(transaction: Transaction) {
     Row() {
-      Column() {
+      Column({ space: 6 }) {
         Text(this.getCategoryName(transaction.categoryId))
           .fontSize(16)
           .fontWeight(FontWeight.Medium)
-          .fontColor('#1a1a1a')
+          .fontColor($r('app.color.text_primary'))
 
         Text(transaction.description)
           .fontSize(14)
-          .fontColor('#666666')
-          .margin({ top: 4 })
+          .fontColor($r('app.color.text_secondary'))
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
 
         Text(this.formatDate(transaction.date))
           .fontSize(12)
-          .fontColor('#999999')
-          .margin({ top: 4 })
+          .fontColor($r('app.color.text_tertiary'))
       }
       .alignItems(HorizontalAlign.Start)
       .layoutWeight(1)
@@ -377,12 +387,14 @@ export struct TransactionListPage {
         Text((transaction.type === 'income' ? '+' : '-') + this.currencySymbol + (transaction.amount / 100).toFixed(2))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
-          .fontColor(transaction.type === 'income' ? '#4CAF50' : '#F44336')
+          .fontColor(transaction.type === 'income' ? $r('app.color.income_color') : $r('app.color.expense_color'))
       }
     }
     .width('100%')
     .padding(16)
-    .backgroundColor('#ffffff')
+    .backgroundColor($r('app.color.card_background'))
+    .borderRadius(12)
+    .shadow({ radius: 4, color: $r('app.color.shadow_light'), offsetY: 2 })
     .onClick(() => this.navigateToEdit(transaction))
   }
 
@@ -391,11 +403,12 @@ export struct TransactionListPage {
     Button() {
       Text('删除')
         .fontSize(16)
-        .fontColor('#ffffff')
+        .fontColor('#FFFFFF')
     }
     .width(80)
     .height('100%')
-    .backgroundColor('#F44336')
+    .backgroundColor($r('app.color.accent_danger'))
+    .borderRadius(12)
     .onClick(() => this.deleteTransaction(id))
   }
 }
