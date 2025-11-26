@@ -312,22 +312,20 @@ export struct StatisticsPage {
   }
 
   /**
-   * 根据金额长度计算合适的字号
+   * 根据金额长度计算合适的字号（保持卡片高度一致）
    */
   calculateAmountFontSize(amount: number): number {
     const amountStr = `${this.currencySymbol}${(Math.abs(amount) / 100).toFixed(2)}`;
     const length = amountStr.length;
     
-    if (length <= 7) {
-      return 32; // 短金额使用大字号
-    } else if (length <= 9) {
-      return 28; // 中等长度
-    } else if (length <= 11) {
-      return 24; // 较长
-    } else if (length <= 13) {
-      return 20; // 很长
+    if (length <= 8) {
+      return 18; // 短金额
+    } else if (length <= 10) {
+      return 16; // 中等长度
+    } else if (length <= 12) {
+      return 14; // 较长
     } else {
-      return 18; // 超长金额
+      return 10; // 超长金额
     }
   }
 
@@ -432,7 +430,9 @@ export struct StatisticsPage {
             .fontWeight(FontWeight.Bold)
             .fontColor('#4CAF50')
             .maxLines(1)
+            .height(32)
             .width('100%')
+            .textAlign(TextAlign.Center)
         }
         .layoutWeight(1)
         .padding(16)
@@ -451,7 +451,9 @@ export struct StatisticsPage {
             .fontWeight(FontWeight.Bold)
             .fontColor('#F44336')
             .maxLines(1)
+            .height(32)
             .width('100%')
+            .textAlign(TextAlign.Center)
         }
         .layoutWeight(1)
         .padding(16)
@@ -471,7 +473,9 @@ export struct StatisticsPage {
             .fontWeight(FontWeight.Bold)
             .fontColor(this.balance >= 0 ? '#4CAF50' : '#F44336')
             .maxLines(1)
+            .height(32)
             .width('100%')
+            .textAlign(TextAlign.Center)
         }
         .layoutWeight(1)
         .padding(16)

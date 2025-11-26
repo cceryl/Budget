@@ -4,9 +4,76 @@ import { picker } from '@kit.CoreFileKit';
 import { fileIo } from '@kit.CoreFileKit';
 import { util } from '@kit.ArkTS';
 
+/**
+ * 设置项组件
+ */
+@Component
+struct SettingItemView {
+  @Prop title: string = '';
+  @Prop value: string = '';
+  onItemClick: (() => void) | null = null;
+
+  build() {
+    Row() {
+      Text(this.title)
+        .fontSize(16)
+        .fontColor('#1a1a1a')
+        .layoutWeight(1)
+
+      if (this.value !== '') {
+        Text(this.value)
+          .fontSize(14)
+          .fontColor('#999999')
+          .margin({ right: 8 })
+      }
+
+      if (this.onItemClick !== null) {
+        Text('›')
+          .fontSize(20)
+          .fontColor('#cccccc')
+      }
+    }
+    .width('100%')
+    .height(56)
+    .padding({ left: 16, right: 16 })
+    .backgroundColor('#ffffff')
+    .onClick(() => {
+      if (this.onItemClick !== null) {
+        this.onItemClick();
+      }
+    })
+  }
+}
+
+/**
+ * 危险操作设置项组件
+ */
+@Component
+struct SettingItemDangerView {
+  @Prop title: string = '';
+  onItemClick: () => void = () => {};
+
+  build() {
+    Row() {
+      Text(this.title)
+        .fontSize(16)
+        .fontColor('#F44336')
+        .layoutWeight(1)
+    }
+    .width('100%')
+    .height(56)
+    .padding({ left: 16, right: 16 })
+    .backgroundColor('#ffffff')
+    .onClick(this.onItemClick)
+  }
+}
+
 @Component
 export struct SettingsPage {
   @State settings: Settings = Settings.getDefault();
+  @State themeModeDisplay: string = '跟随系统';
+  @State currencyDisplay: string = '人民币 (¥)';
+  @State defaultPageDisplay: string = '明细';
   @State showThemeDialog: boolean = false;
   @State showCurrencyDialog: boolean = false;
   @State showDefaultPageDialog: boolean = false;
@@ -24,11 +91,25 @@ export struct SettingsPage {
   }
 
   async loadSettings(): Promise<void> {
-    this.settings = await this.dataService.getSettings();
+    const loadedSettings = await this.dataService.getSettings();
+
+    // 创建新实例以触发UI更新
+    this.settings = new Settings(
+      loadedSettings.themeMode,
+      loadedSettings.currency,
+      loadedSettings.defaultPage,
+      loadedSettings.language
+    );
+    // 更新显示文本
+    this.themeModeDisplay = this.settings.getThemeModeDisplayName();
+    this.currencyDisplay = this.settings.getCurrencyDisplayName();
+    this.defaultPageDisplay = this.settings.getDefaultPageDisplayName();
   }
 
   async updateSettings(): Promise<void> {
     await this.dataService.saveSettings(this.settings);
+    // 保存后重新加载以确保状态同步
+    await this.loadSettings();
   }
 
   async handleExportCSV(): Promise<void> {
@@ -182,8 +263,12 @@ export struct SettingsPage {
         // 外观设置分组
         ListItemGroup({ header: this.GroupHeader('外观') }) {
           ListItem() {
-            this.SettingItem('深色模式', this.settings.getThemeModeDisplayName(), () => {
-              this.showThemeDialog = true;
+            SettingItemView({
+              title: '深色模式',
+              value: this.themeModeDisplay,
+              onItemClick: () => {
+                this.showThemeDialog = true;
+              }
             })
           }
         }
@@ -191,45 +276,72 @@ export struct SettingsPage {
         // 通用设置分组
         ListItemGroup({ header: this.GroupHeader('通用') }) {
           ListItem() {
-            this.SettingItem('货币单位', this.settings.getCurrencyDisplayName(), () => {
-              this.showCurrencyDialog = true;
+            SettingItemView({
+              title: '货币单位',
+              value: this.currencyDisplay,
+              onItemClick: () => {
+                this.showCurrencyDialog = true;
+              }
             })
           }
 
           ListItem() {
-            this.SettingItem('默认页面', this.settings.getDefaultPageDisplayName(), () => {
-              this.showDefaultPageDialog = true;
+            SettingItemView({
+              title: '默认页面',
+              value: this.defaultPageDisplay,
+              onItemClick: () => {
+                this.showDefaultPageDialog = true;
+              }
             })
           }
 
           ListItem() {
-            this.SettingItem('本地化', '中文', null)
+            SettingItemView({
+              title: '本地化',
+              value: '中文',
+              onItemClick: null
+            })
           }
         }
 
         // 数据管理分组
         ListItemGroup({ header: this.GroupHeader('数据') }) {
           ListItem() {
-            this.SettingItem('导出数据 (CSV)', '', () => {
-              this.handleExportCSV();
+            SettingItemView({
+              title: '导出数据 (CSV)',
+              value: '',
+              onItemClick: () => {
+                this.handleExportCSV();
+              }
             })
           }
 
           ListItem() {
-            this.SettingItem('备份数据', '', () => {
-              this.handleBackup();
+            SettingItemView({
+              title: '备份数据',
+              value: '',
+              onItemClick: () => {
+                this.handleBackup();
+              }
             })
           }
 
           ListItem() {
-            this.SettingItem('恢复数据', '', () => {
-              this.handleRestore();
+            SettingItemView({
+              title: '恢复数据',
+              value: '',
+              onItemClick: () => {
+                this.handleRestore();
+              }
             })
           }
 
           ListItem() {
-            this.SettingItemDanger('清空数据', () => {
-              this.handleClearData();
+            SettingItemDangerView({
+              title: '清空数据',
+              onItemClick: () => {
+                this.handleClearData();
+              }
             })
           }
         }
@@ -237,8 +349,12 @@ export struct SettingsPage {
         // 关于分组
         ListItemGroup({ header: this.GroupHeader('关于') }) {
           ListItem() {
-            this.SettingItem('关于此应用', '', () => {
-              this.showAboutDialog = true;
+            SettingItemView({
+              title: '关于此应用',
+              value: '',
+              onItemClick: () => {
+                this.showAboutDialog = true;
+              }
             })
           }
         }
@@ -289,53 +405,6 @@ export struct SettingsPage {
   }
 
   @Builder
-  SettingItem(title: string, value: string, onClick: (() => void) | null) {
-    Row() {
-      Text(title)
-        .fontSize(16)
-        .fontColor('#1a1a1a')
-        .layoutWeight(1)
-
-      if (value !== '') {
-        Text(value)
-          .fontSize(14)
-          .fontColor('#999999')
-          .margin({ right: 8 })
-      }
-
-      if (onClick !== null) {
-        Text('›')
-          .fontSize(20)
-          .fontColor('#cccccc')
-      }
-    }
-    .width('100%')
-    .height(56)
-    .padding({ left: 16, right: 16 })
-    .backgroundColor('#ffffff')
-    .onClick(() => {
-      if (onClick !== null) {
-        onClick();
-      }
-    })
-  }
-
-  @Builder
-  SettingItemDanger(title: string, onClick: () => void) {
-    Row() {
-      Text(title)
-        .fontSize(16)
-        .fontColor('#F44336')
-        .layoutWeight(1)
-    }
-    .width('100%')
-    .height(56)
-    .padding({ left: 16, right: 16 })
-    .backgroundColor('#ffffff')
-    .onClick(onClick)
-  }
-
-  @Builder
   ThemeDialog() {
     Column() {
       // 遮罩层
@@ -364,21 +433,18 @@ export struct SettingsPage {
           this.DialogOption('跟随系统', this.settings.themeMode === 'system', () => {
             this.settings.themeMode = 'system';
             this.updateSettings();
-            this.loadSettings(); // 重新加载以更新显示
             this.showThemeDialog = false;
           })
 
           this.DialogOption('明亮模式', this.settings.themeMode === 'light', () => {
             this.settings.themeMode = 'light';
             this.updateSettings();
-            this.loadSettings(); // 重新加载以更新显示
             this.showThemeDialog = false;
           })
 
           this.DialogOption('深色模式', this.settings.themeMode === 'dark', () => {
             this.settings.themeMode = 'dark';
             this.updateSettings();
-            this.loadSettings(); // 重新加载以更新显示
             this.showThemeDialog = false;
           })
         }
@@ -436,28 +502,24 @@ export struct SettingsPage {
           this.DialogOption('人民币 (¥)', this.settings.currency === '¥', () => {
             this.settings.currency = '¥';
             this.updateSettings();
-            this.loadSettings(); // 重新加载以更新显示
             this.showCurrencyDialog = false;
           })
 
           this.DialogOption('美元 ($)', this.settings.currency === '$', () => {
             this.settings.currency = '$';
             this.updateSettings();
-            this.loadSettings(); // 重新加载以更新显示
             this.showCurrencyDialog = false;
           })
 
           this.DialogOption('欧元 (€)', this.settings.currency === '€', () => {
             this.settings.currency = '€';
             this.updateSettings();
-            this.loadSettings(); // 重新加载以更新显示
             this.showCurrencyDialog = false;
           })
 
           this.DialogOption('英镑 (£)', this.settings.currency === '£', () => {
             this.settings.currency = '£';
             this.updateSettings();
-            this.loadSettings(); // 重新加载以更新显示
             this.showCurrencyDialog = false;
           })
         }
@@ -515,21 +577,18 @@ export struct SettingsPage {
           this.DialogOption('明细', this.settings.defaultPage === 'details', () => {
             this.settings.defaultPage = 'details';
             this.updateSettings();
-            this.loadSettings(); // 重新加载以更新显示
             this.showDefaultPageDialog = false;
           })
 
           this.DialogOption('预算', this.settings.defaultPage === 'budget', () => {
             this.settings.defaultPage = 'budget';
             this.updateSettings();
-            this.loadSettings(); // 重新加载以更新显示
             this.showDefaultPageDialog = false;
           })
 
           this.DialogOption('统计', this.settings.defaultPage === 'stats', () => {
             this.settings.defaultPage = 'stats';
             this.updateSettings();
-            this.loadSettings(); // 重新加载以更新显示
             this.showDefaultPageDialog = false;
           })
         }
