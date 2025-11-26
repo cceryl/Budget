@@ -49,6 +49,7 @@ export struct StatisticsPage {
   @State incomeCategories: CategoryStatViewModel[] = []; // 收入分类统计
   @State trendData: TrendDataPoint[] = []; // 趋势数据
   @State showIncomeStats: boolean = false; // 是否显示收入统计（默认显示支出）
+  @State currencySymbol: string = '¥'; // 货币符号
   @State showIncomeTrend: boolean = false; // 是否显示收入趋势（默认显示支出）
   @Prop @Watch('onRefreshTriggerChange') refreshTrigger: number = 0;
   
@@ -75,6 +76,10 @@ export struct StatisticsPage {
     this.totalIncome = 0;
     this.totalExpense = 0;
     this.balance = 0;
+    
+    // 加载货币设置
+    const settings = await this.dataService.getSettings();
+    this.currencySymbol = settings.currency;
     
     // 加载分类数据
     this.categories = await this.dataService.getAllCategories();
@@ -306,6 +311,26 @@ export struct StatisticsPage {
     return '统计';
   }
 
+  /**
+   * 根据金额长度计算合适的字号
+   */
+  calculateAmountFontSize(amount: number): number {
+    const amountStr = `${this.currencySymbol}${(Math.abs(amount) / 100).toFixed(2)}`;
+    const length = amountStr.length;
+    
+    if (length <= 7) {
+      return 32; // 短金额使用大字号
+    } else if (length <= 9) {
+      return 28; // 中等长度
+    } else if (length <= 11) {
+      return 24; // 较长
+    } else if (length <= 13) {
+      return 20; // 很长
+    } else {
+      return 18; // 超长金额
+    }
+  }
+
   build() {
     Column() {
       // 标题栏
@@ -402,12 +427,11 @@ export struct StatisticsPage {
             .fontSize(14)
             .fontColor('#666666')
             .margin({ bottom: 8 })
-          Text(`¥${(this.totalIncome / 100).toFixed(2)}`)
-            .fontSize(16)
+          Text(`${this.currencySymbol}${(this.totalIncome / 100).toFixed(2)}`)
+            .fontSize(this.calculateAmountFontSize(this.totalIncome))
             .fontWeight(FontWeight.Bold)
             .fontColor('#4CAF50')
             .maxLines(1)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
             .width('100%')
         }
         .layoutWeight(1)
@@ -422,12 +446,11 @@ export struct StatisticsPage {
             .fontSize(14)
             .fontColor('#666666')
             .margin({ bottom: 8 })
-          Text(`¥${(this.totalExpense / 100).toFixed(2)}`)
-            .fontSize(16)
+          Text(`${this.currencySymbol}${(this.totalExpense / 100).toFixed(2)}`)
+            .fontSize(this.calculateAmountFontSize(this.totalExpense))
             .fontWeight(FontWeight.Bold)
             .fontColor('#F44336')
             .maxLines(1)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
             .width('100%')
         }
         .layoutWeight(1)
@@ -443,12 +466,11 @@ export struct StatisticsPage {
             .fontSize(14)
             .fontColor('#666666')
             .margin({ bottom: 8 })
-          Text(`¥${(this.balance / 100).toFixed(2)}`)
-            .fontSize(16)
+          Text(`${this.currencySymbol}${(this.balance / 100).toFixed(2)}`)
+            .fontSize(this.calculateAmountFontSize(this.balance))
             .fontWeight(FontWeight.Bold)
             .fontColor(this.balance >= 0 ? '#4CAF50' : '#F44336')
             .maxLines(1)
-            .textOverflow({ overflow: TextOverflow.Ellipsis })
             .width('100%')
         }
         .layoutWeight(1)
@@ -625,7 +647,7 @@ export struct StatisticsPage {
 
             Blank()
 
-            Text(`¥${(cat.amount / 100).toFixed(2)}`)
+            Text(`${this.currencySymbol}${(cat.amount / 100).toFixed(2)}`)
               .fontSize(15)
               .fontWeight(FontWeight.Medium)
               .fontColor('#1a1a1a')
@@ -806,7 +828,7 @@ export struct StatisticsPage {
         .height(188)
 
         // 显示最大值参考
-        Text(`最高: ¥${(this.getMaxTrendAmount() / 100).toFixed(2)}`)
+        Text(`最高: ${this.currencySymbol}${(this.getMaxTrendAmount() / 100).toFixed(2)}`)
           .fontSize(12)
           .fontColor('#999999')
           .margin({ top: 8 })

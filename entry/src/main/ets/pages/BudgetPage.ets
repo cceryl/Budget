@@ -37,6 +37,7 @@ export struct BudgetPage {
   @State categories: Category[] = [];
   @State budgetViewModels: BudgetViewModel[] = [];
   @State currentPeriod: string = 'month'; // 'week', 'month', 'year'
+  @State currencySymbol: string = '¥'; // 货币符号
   @Prop @Watch('onRefreshTriggerChange') refreshTrigger: number = 0;
   private dataService: DataService = DataService.getInstance();
 
@@ -49,6 +50,10 @@ export struct BudgetPage {
   }
 
   async loadData(): Promise<void> {
+    // 加载货币设置
+    const settings = await this.dataService.getSettings();
+    this.currencySymbol = settings.currency;
+    
     // 加载分类数据
     this.categories = await this.dataService.getAllCategories();
     
@@ -284,7 +289,7 @@ export struct BudgetPage {
 
       // 金额和百分比
       Row() {
-        Text(`¥${(viewModel.spent / 100).toFixed(2)} / ¥${(viewModel.budget.amount / 100).toFixed(2)}`)
+        Text(`${this.currencySymbol}${(viewModel.spent / 100).toFixed(2)} / ${this.currencySymbol}${(viewModel.budget.amount / 100).toFixed(2)}`)
           .fontSize(14)
           .fontColor('#666666')
 

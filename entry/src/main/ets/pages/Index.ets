@@ -1,16 +1,34 @@
 import { TransactionListPage } from './TransactionListPage';
 import { BudgetPage } from './BudgetPage';
 import { StatisticsPage } from './StatisticsPage';
+import { SettingsPage } from './SettingsPage';
+import { DataService } from '../services/DataService';
+import { Settings } from '../models/Settings';
 
 @Entry
 @Component
 struct Index {
   @State currentTab: string = 'details'; // 'details' | 'stats' | 'budget' | 'settings'
   @State refreshKey: number = 0; // 用于强制刷新子组件
+  private dataService: DataService = DataService.getInstance();
+  private hasLoadedSettings: boolean = false;
 
-  onPageShow(): void {
-    // 从编辑页返回时刷新明细页面
+  async aboutToAppear(): Promise<void> {
+    // 加载设置并应用默认页面
+    if (!this.hasLoadedSettings) {
+      const settings: Settings = await this.dataService.getSettings();
+      this.currentTab = settings.defaultPage;
+      this.hasLoadedSettings = true;
+    }
+  }
+
+  async onPageShow(): Promise<void> {
+    // 从编辑页或设置页返回时刷新
     this.refreshKey++;
+    
+    // 重新加载设置（可能在设置页修改了默认页面，但不切换当前标签）
+    const settings: Settings = await this.dataService.getSettings();
+    // 注意：不在这里切换currentTab，因为用户可能正在浏览其他页面
   }
 
   navigateToEdit(): void {
@@ -31,16 +49,7 @@ struct Index {
         } else if (this.currentTab === 'budget') {
           BudgetPage({ refreshTrigger: this.refreshKey })
         } else if (this.currentTab === 'settings') {
-          Column() {
-            Text('设置（空）')
-              .fontSize(18)
-              .fontColor('#666666')
-          }
-          .width('100%')
-          .height('100%')
-          .justifyContent(FlexAlign.Center)
-          .alignItems(HorizontalAlign.Center)
-          .backgroundColor('#f5f5f5')
+          SettingsPage({ refreshTrigger: this.refreshKey })
         }
       }
       .width('100%')

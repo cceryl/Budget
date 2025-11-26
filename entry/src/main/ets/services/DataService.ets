@@ -2,6 +2,19 @@ import { preferences } from '@kit.ArkData';
 import { Transaction, TransactionJson } from '../models/Transaction';
 import { Category, CategoryJson, PRESET_CATEGORIES } from '../models/Category';
 import { Budget, BudgetJson } from '../models/Budget';
+import { Settings, SettingsJson } from '../models/Settings';
+
+/**
+ * 导出数据的完整结构接口
+ */
+interface ExportData {
+  transactions: TransactionJson[];
+  categories: CategoryJson[];
+  budgets: BudgetJson[];
+  settings: SettingsJson;
+  exportTime: number;
+  version: string;
+}
 
 /**
  * 数据持久化服务
@@ -13,6 +26,7 @@ export class DataService {
   private readonly TRANSACTION_KEY = 'transactions';
   private readonly CATEGORY_KEY = 'categories';
   private readonly BUDGET_KEY = 'budgets';
+  private readonly SETTINGS_KEY = 'settings';
   private readonly PREFERENCES_NAME = 'budget_data';
 
   private constructor() {}
@@ -408,6 +422,159 @@ export class DataService {
     } catch (err) {
       console.error('Calculate budget spent failed:', err);
       return 0;
+    }
+  }
+
+  // ==================== Settings CRUD ====================
+
+  /**
+   * 获取设置
+   */
+  public async getSettings(): Promise<Settings> {
+    try {
+      const jsonStr = await this.preferencesInstance?.get(this.SETTINGS_KEY, '') as string;
+      if (jsonStr === '') {
+        return Settings.getDefault();
+      }
+      const json = JSON.parse(jsonStr) as SettingsJson;
+      return Settings.fromJson(json);
+    } catch (err) {
+      console.error('Get settings failed:', err);
+      return Settings.getDefault();
+    }
+  }
+
+  /**
+   * 保存设置
+   */
+  public async saveSettings(settings: Settings): Promise<boolean> {
+    try {
+      const json = settings.toJson();
+      await this.preferencesInstance?.put(this.SETTINGS_KEY, JSON.stringify(json));
+      await this.preferencesInstance?.flush();
+      return true;
+    } catch (err) {
+      console.error('Save settings failed:', err);
+      return false;
+    }
+  }
+
+  // ==================== Data Export/Import ====================
+
+  /**
+   * 导出所有数据为JSON格式
+   */
+  public async exportAllData(): Promise<string> {
+    try {
+      const transactions = await this.getAllTransactions();
+      const categories = await this.getAllCategories();
+      const budgets = await this.getAllBudgets();
+      const settings = await this.getSettings();
+
+      const data: ExportData = {
+        transactions: transactions.map(t => t.toJson()),
+        categories: categories.map(c => c.toJson()),
+        budgets: budgets.map(b => b.toJson()),
+        settings: settings.toJson(),
+        exportTime: Date.now(),
+        version: '1.0.0'
+      };
+
+      return JSON.stringify(data, null, 2);
+    } catch (err) {
+      console.error('Export data failed:', err);
+      return '';
+    }
+  }
+
+  /**
+   * 导出交易为CSV格式
+   */
+  public async exportTransactionsCSV(): Promise<string> {
+    try {
+      const transactions = await this.getAllTransactions();
+      const categories = await this.getAllCategories();
+
+      // CSV头部
+      let csv = 'date,type,category,amount,notes\n';
+
+      // 添加每一行数据
+      for (const t of transactions) {
+        const category = categories.find(c => c.id === t.categoryId);
+        const categoryName = category ? category.name : '未知';
+        const date = new Date(t.date);
+        const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        const amount = (t.amount / 100).toFixed(2);
+        const notes = t.description.replace(/"/g, '""'); // 转义引号
+
+        csv += `${dateStr},${t.type},${categoryName},${amount},"${notes}"\n`;
+      }
+
+      return csv;
+    } catch (err) {
+      console.error('Export CSV failed:', err);
+      return '';
+    }
+  }
+
+  /**
+   * 导入数据（覆盖当前数据）
+   */
+  public async importAllData(jsonData: string): Promise<boolean> {
+    try {
+      const parsed = JSON.parse(jsonData) as object;
+      const data = parsed as ExportData;
+
+      // 验证数据格式
+      if (!data.transactions || !data.categories || !data.budgets || !data.settings) {
+        console.error('Invalid data format');
+        return false;
+      }
+
+      // 导入交易
+      const transactionJsons = data.transactions as TransactionJson[];
+      const transactions = transactionJsons.map((json: TransactionJson) => Transaction.fromJson(json));
+      await this.saveTransactions(transactions);
+
+      // 导入分类
+      const categoryJsons = data.categories as CategoryJson[];
+      const categories = categoryJsons.map((json: CategoryJson) => Category.fromJson(json));
+      await this.saveCategories(categories);
+
+      // 导入预算
+      const budgetJsons = data.budgets as BudgetJson[];
+      const budgets = budgetJsons.map((json: BudgetJson) => Budget.fromJson(json));
+      await this.saveBudgets(budgets);
+
+      // 导入设置
+      const settingsJson = data.settings as SettingsJson;
+      const settings = Settings.fromJson(settingsJson);
+      await this.saveSettings(settings);
+
+      return true;
+    } catch (err) {
+      console.error('Import data failed:', err);
+      return false;
+    }
+  }
+
+  /**
+   * 清空所有数据
+   */
+  public async clearAllData(): Promise<boolean> {
+    try {
+      await this.saveTransactions([]);
+      await this.saveCategories([]);
+      await this.saveBudgets([]);
+      await this.saveSettings(Settings.getDefault());
+      
+      // 重新初始化预设分类
+      await this.initializeCategories();
+      
+      return true;
+    } catch (err) {
+      console.error('Clear data failed:', err);
+      return false;
     }
   }
 }

@@ -14,9 +14,11 @@ struct TransactionEditPage {
   @State selectedDate: number = Date.now();
   @State categories: Category[] = [];
   @State isEditMode: boolean = false;
+  @State currencySymbol: string = '¥'; // 货币符号
   private dataService: DataService = DataService.getInstance();
 
   aboutToAppear(): void {
+    this.loadSettings();
     this.loadCategories();
     
     // 检查是否是编辑模式
@@ -27,6 +29,11 @@ struct TransactionEditPage {
       this.isEditMode = true;
       this.loadTransaction();
     }
+  }
+
+  async loadSettings(): Promise<void> {
+    const settings = await this.dataService.getSettings();
+    this.currencySymbol = settings.currency;
   }
 
   async loadCategories(): Promise<void> {
@@ -275,7 +282,7 @@ struct TransactionEditPage {
               .margin({ bottom: 8 })
 
             Row() {
-              Text('¥')
+              Text(this.currencySymbol)
                 .fontSize(24)
                 .fontColor('#1a1a1a')
                 .margin({ right: 8 })

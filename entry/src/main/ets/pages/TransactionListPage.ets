@@ -12,6 +12,7 @@ export struct TransactionListPage {
   @State searchText: string = '';
   @State selectedCategoryId: string = 'all';
   @State showCategorySelector: boolean = false;
+  @State currencySymbol: string = '¥'; // 货币符号
   @Prop @Watch('onRefreshTriggerChange') refreshTrigger: number = 0; // 接收父组件的刷新触发器
   private dataService: DataService = DataService.getInstance();
 
@@ -29,6 +30,9 @@ export struct TransactionListPage {
     this.categories = await this.dataService.getAllCategories();
     // 再加载交易数据
     this.transactions = await this.dataService.getAllTransactions();
+    // 加载货币设置
+    const settings = await this.dataService.getSettings();
+    this.currencySymbol = settings.currency;
     // 按日期倒序排列
     this.transactions.sort((a, b) => b.date - a.date);
     this.applyFilter();
@@ -370,7 +374,7 @@ export struct TransactionListPage {
       .layoutWeight(1)
 
       Column() {
-        Text((transaction.type === 'income' ? '+' : '-') + '¥' + (transaction.amount / 100).toFixed(2))
+        Text((transaction.type === 'income' ? '+' : '-') + this.currencySymbol + (transaction.amount / 100).toFixed(2))
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .fontColor(transaction.type === 'income' ? '#4CAF50' : '#F44336')
