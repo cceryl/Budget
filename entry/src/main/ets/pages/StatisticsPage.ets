@@ -49,6 +49,7 @@ export struct StatisticsPage {
   @State incomeCategories: CategoryStatViewModel[] = []; // 收入分类统计
   @State trendData: TrendDataPoint[] = []; // 趋势数据
   @State showIncomeStats: boolean = false; // 是否显示收入统计（默认显示支出）
+  @State showIncomeTrend: boolean = false; // 是否显示收入趋势（默认显示支出）
   @Prop @Watch('onRefreshTriggerChange') refreshTrigger: number = 0;
   
   private dataService: DataService = DataService.getInstance();
@@ -201,12 +202,13 @@ export struct StatisticsPage {
    */
   calculateTrendData(transactions: Transaction[], periodTime: PeriodTime): void {
     const dataMap = new Map<string, number>();
+    const targetType = this.showIncomeTrend ? 'income' : 'expense';
     
     // 根据周期类型决定分组粒度
     if (this.currentPeriod === 'week') {
       // 按天分组
       for (const t of transactions) {
-        if (t.type === 'expense') {
+        if (t.type === targetType) {
           const date = new Date(t.date);
           const dateKey = `${date.getMonth() + 1}/${date.getDate()}`;
           const current = dataMap.get(dateKey);
@@ -236,7 +238,7 @@ export struct StatisticsPage {
       const targetYear = startDate.getFullYear();
       
       for (const t of transactions) {
-        if (t.type === 'expense') {
+        if (t.type === targetType) {
           const date = new Date(t.date);
           // 确保是同一个月
           if (date.getMonth() === targetMonth && date.getFullYear() === targetYear) {
@@ -267,7 +269,7 @@ export struct StatisticsPage {
     } else if (this.currentPeriod === 'year') {
       // 按月分组
       for (const t of transactions) {
-        if (t.type === 'expense') {
+        if (t.type === targetType) {
           const date = new Date(t.date);
           const month = date.getMonth() + 1;
           const dateKey = `${month}`;
@@ -667,17 +669,48 @@ export struct StatisticsPage {
   @Builder
   TrendSection() {
     Column() {
-      Text('支出趋势')
-        .fontSize(18)
-        .fontWeight(FontWeight.Bold)
-        .fontColor('#1a1a1a')
-        .width('100%')
-        .margin({ bottom: 12 })
+      // 标题和切换按钮
+      Row() {
+        Text('趋势分析')
+          .fontSize(18)
+          .fontWeight(FontWeight.Bold)
+          .fontColor('#1a1a1a')
+
+        Blank()
+
+        // 收入/支出切换
+        Row() {
+          Button('支出')
+            .fontSize(12)
+            .height(28)
+            .padding({ left: 12, right: 12 })
+            .backgroundColor(!this.showIncomeTrend ? '#4CAF50' : '#f0f0f0')
+            .fontColor(!this.showIncomeTrend ? '#ffffff' : '#666666')
+            .onClick(() => {
+              this.showIncomeTrend = false;
+              this.loadData();
+            })
+
+          Button('收入')
+            .fontSize(12)
+            .height(28)
+            .padding({ left: 12, right: 12 })
+            .backgroundColor(this.showIncomeTrend ? '#4CAF50' : '#f0f0f0')
+            .fontColor(this.showIncomeTrend ? '#ffffff' : '#666666')
+            .margin({ left: 8 })
+            .onClick(() => {
+              this.showIncomeTrend = true;
+              this.loadData();
+            })
+        }
+      }
+      .width('100%')
+      .margin({ bottom: 12 })
 
       if (this.trendData.length > 0) {
         this.SimpleTrendChart()
       } else {
-        this.EmptyDataPlaceholder('暂无趋势数据')
+        this.EmptyDataPlaceholder(this.showIncomeTrend ? '暂无收入数据' : '暂无支出数据')
       }
     }
     .width('100%')
@@ -701,16 +734,36 @@ export struct StatisticsPage {
   }
 
   /**
+   * 判断是否应该显示日期标签（用于月视图优化）
+   * 只显示1号和被5整除的日期
+   */
+  shouldShowDateLabel(dateStr: string): boolean {
+    // 周视图和年视图的日期包含非数字字符，全部显示
+    if (dateStr.includes('/') || dateStr.includes('月')) {
+      return true;
+    }
+    
+    // 月视图：只显示纯数字日期
+    const day = parseInt(dateStr);
+    if (isNaN(day)) {
+      return true;
+    }
+    
+    // 显示1号和被5整除的日期（5, 10, 15, 20, 25, 30）
+    return day === 1 || day % 5 === 0;
+  }
+
+  /**
    * 简化版趋势图（使用柱状图）
    */
   @Builder
   SimpleTrendChart() {
     Column() {
       if (this.getMaxTrendAmount() === 0) {
-        this.EmptyDataPlaceholder('暂无支出数据')
+        this.EmptyDataPlaceholder(this.showIncomeTrend ? '暂无收入数据' : '暂无支出数据')
       } else {
         // 柱状图
-        Row({ space: 2 }) {
+        Row({ space: 1 }) {
           ForEach(this.trendData, (point: TrendDataPoint) => {
             Column() {
               // 柱子容器（固定高度区域）
@@ -718,26 +771,34 @@ export struct StatisticsPage {
                 Column()
                   .width('100%')
                   .height(point.amount > 0 ? `${(point.amount / this.getMaxTrendAmount()) * 100}%` : '2%')
-                  .backgroundColor('#4CAF50')
+                  .backgroundColor(this.showIncomeTrend ? '#4CAF50' : '#36A2EB')
                   .borderRadius(4)
               }
               .width('100%')
               .height(160)
               .justifyContent(FlexAlign.End)
 
-              // 日期标签（独立固定高度）
-              Text(point.date)
-                .fontSize(10)
-                .fontColor('#999999')
-                .margin({ top: 4 })
-                .maxLines(1)
-                .width('100%')
-                .textAlign(TextAlign.Center)
-                .height(24)
-                .lineHeight(24)
+              // 日期标签容器
+              Stack() {
+                // 只在1号和被5整除的日期显示标签
+                if (this.shouldShowDateLabel(point.date)) {
+                  Text(point.date)
+                    .fontSize(10)
+                    .fontColor('#999999')
+                    .textAlign(TextAlign.Center)
+                    .maxLines(1)
+                    .textOverflow({ overflow: TextOverflow.None })
+                    .clip(false)
+                }
+              }
+              .width('200%')
+              .height(24)
+              .margin({ top: 4 })
+              .clip(false)
             }
             .layoutWeight(1)
             .justifyContent(FlexAlign.End)
+            .clip(false)
           }, (point: TrendDataPoint) => JSON.stringify(point))
         }
         .width('100%')
