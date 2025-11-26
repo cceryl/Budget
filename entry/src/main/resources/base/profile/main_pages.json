@@ -2,6 +2,7 @@
   "src": [
     "pages/Index",
     "pages/TransactionEditPage",
-    "pages/CategoryManagePage"
+    "pages/CategoryManagePage",
+    "pages/BudgetEditPage"
   ]
 }

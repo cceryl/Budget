@@ -1,6 +1,7 @@
 import { preferences } from '@kit.ArkData';
 import { Transaction, TransactionJson } from '../models/Transaction';
 import { Category, CategoryJson, PRESET_CATEGORIES } from '../models/Category';
+import { Budget, BudgetJson } from '../models/Budget';
 
 /**
  * 数据持久化服务
@@ -11,6 +12,7 @@ export class DataService {
   private preferencesInstance: preferences.Preferences | null = null;
   private readonly TRANSACTION_KEY = 'transactions';
   private readonly CATEGORY_KEY = 'categories';
+  private readonly BUDGET_KEY = 'budgets';
   private readonly PREFERENCES_NAME = 'budget_data';
 
   private constructor() {}
@@ -258,5 +260,154 @@ export class DataService {
    */
   public generateId(): string {
     return Date.now().toString() + Math.random().toString(36).substr(2, 9);
+  }
+
+  // ==================== Budget CRUD ====================
+
+  /**
+   * 创建新预算
+   */
+  public async createBudget(budget: Budget): Promise<boolean> {
+    try {
+      const budgets = await this.getAllBudgets();
+      budgets.push(budget);
+      return await this.saveBudgets(budgets);
+    } catch (err) {
+      console.error('Create budget failed:', err);
+      return false;
+    }
+  }
+
+  /**
+   * 获取所有预算
+   */
+  public async getAllBudgets(): Promise<Budget[]> {
+    try {
+      const jsonStr = await this.preferencesInstance?.get(this.BUDGET_KEY, '[]') as string;
+      const jsonArray = JSON.parse(jsonStr) as Array<BudgetJson>;
+      return jsonArray.map(json => Budget.fromJson(json));
+    } catch (err) {
+      console.error('Get all budgets failed:', err);
+      return [];
+    }
+  }
+
+  /**
+   * 根据ID获取预算
+   */
+  public async getBudgetById(id: string): Promise<Budget | null> {
+    const budgets = await this.getAllBudgets();
+    const found = budgets.find(b => b.id === id);
+    return found ? found : null;
+  }
+
+  /**
+   * 根据分类ID和周期获取预算
+   */
+  public async getBudgetByCategoryAndPeriod(categoryId: string, period: string): Promise<Budget | null> {
+    const budgets = await this.getAllBudgets();
+    const found = budgets.find(b => b.categoryId === categoryId && b.period === period && !b.isExpired());
+    return found ? found : null;
+  }
+
+  /**
+   * 获取全局预算
+   */
+  public async getGlobalBudget(period: string): Promise<Budget | null> {
+    const budgets = await this.getAllBudgets();
+    const found = budgets.find(b => b.type === 'global' && b.period === period && !b.isExpired());
+    return found ? found : null;
+  }
+
+  /**
+   * 更新预算
+   */
+  public async updateBudget(budget: Budget): Promise<boolean> {
+    try {
+      const budgets = await this.getAllBudgets();
+      const index = budgets.findIndex(b => b.id === budget.id);
+      if (index !== -1) {
+        budgets[index] = budget;
+        return await this.saveBudgets(budgets);
+      }
+      return false;
+    } catch (err) {
+      console.error('Update budget failed:', err);
+      return false;
+    }
+  }
+
+  /**
+   * 删除预算
+   */
+  public async deleteBudget(id: string): Promise<boolean> {
+    try {
+      const budgets = await this.getAllBudgets();
+      const filtered = budgets.filter(b => b.id !== id);
+      return await this.saveBudgets(filtered);
+    } catch (err) {
+      console.error('Delete budget failed:', err);
+      return false;
+    }
+  }
+
+  /**
+   * 根据分类ID删除所有相关预算
+   */
+  public async deleteBudgetsByCategoryId(categoryId: string): Promise<boolean> {
+    try {
+      const budgets = await this.getAllBudgets();
+      const filtered = budgets.filter(b => b.categoryId !== categoryId);
+      return await this.saveBudgets(filtered);
+    } catch (err) {
+      console.error('Delete budgets by category failed:', err);
+      return false;
+    }
+  }
+
+  /**
+   * 保存预算列表
+   */
+  private async saveBudgets(budgets: Budget[]): Promise<boolean> {
+    try {
+      const jsonArray = budgets.map(b => b.toJson());
+      await this.preferencesInstance?.put(this.BUDGET_KEY, JSON.stringify(jsonArray));
+      await this.preferencesInstance?.flush();
+      return true;
+    } catch (err) {
+      console.error('Save budgets failed:', err);
+      return false;
+    }
+  }
+
+  /**
+   * 计算预算在指定周期内的消耗金额
+   */
+  public async calculateBudgetSpent(budget: Budget): Promise<number> {
+    try {
+      const transactions = await this.getAllTransactions();
+      
+      // 筛选出周期内的支出交易
+      const periodTransactions = transactions.filter(t => {
+        if (t.type !== 'expense') {
+          return false;
+        }
+        if (t.date < budget.periodStart || t.date >= budget.periodEnd) {
+          return false;
+        }
+        // 如果是分类预算，只统计该分类的交易
+        if (budget.type === 'category' && t.categoryId !== budget.categoryId) {
+          return false;
+        }
+        return true;
+      });
+
+      // 计算总支出
+      const totalSpent = periodTransactions.reduce((sum, t) => sum + t.amount, 0);
+      return totalSpent;
+    } catch (err) {
+      console.error('Calculate budget spent failed:', err);
+      return 0;
+    }
   }
 }

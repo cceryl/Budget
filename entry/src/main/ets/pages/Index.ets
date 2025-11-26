@@ -1,4 +1,5 @@
 import { TransactionListPage } from './TransactionListPage';
+import { BudgetPage } from './BudgetPage';
 
 @Entry
 @Component
@@ -36,16 +37,7 @@ struct Index {
           .alignItems(HorizontalAlign.Center)
           .backgroundColor('#f5f5f5')
         } else if (this.currentTab === 'budget') {
-          Column() {
-            Text('预算（空）')
-              .fontSize(18)
-              .fontColor('#666666')
-          }
-          .width('100%')
-          .height('100%')
-          .justifyContent(FlexAlign.Center)
-          .alignItems(HorizontalAlign.Center)
-          .backgroundColor('#f5f5f5')
+          BudgetPage({ refreshTrigger: this.refreshKey })
         } else if (this.currentTab === 'settings') {
           Column() {
             Text('设置（空）')

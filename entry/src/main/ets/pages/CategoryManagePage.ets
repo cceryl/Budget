@@ -27,6 +27,8 @@ struct CategoryManagePage {
   async deleteCategory(id: string): Promise<void> {
     const success = await this.dataService.deleteCategory(id);
     if (success) {
+      // 同时删除该分类关联的所有预算
+      await this.dataService.deleteBudgetsByCategoryId(id);
       this.showToast('删除成功');
       this.loadCategories();
     } else {
