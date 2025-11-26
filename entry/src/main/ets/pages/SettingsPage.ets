@@ -3,6 +3,7 @@ import { DataService } from '../services/DataService';
 import { picker } from '@kit.CoreFileKit';
 import { fileIo } from '@kit.CoreFileKit';
 import { util } from '@kit.ArkTS';
+import { common, ConfigurationConstant } from '@kit.AbilityKit';
 
 /**
  * 设置项组件
@@ -81,6 +82,7 @@ export struct SettingsPage {
   @State showConfirmClearDialog: boolean = false;
   @Prop @Watch('onRefreshTriggerChange') refreshTrigger: number = 0;
   private dataService: DataService = DataService.getInstance();
+  private context: common.UIAbilityContext = getContext(this) as common.UIAbilityContext;
 
   aboutToAppear(): void {
     this.loadSettings();
@@ -108,8 +110,43 @@ export struct SettingsPage {
 
   async updateSettings(): Promise<void> {
     await this.dataService.saveSettings(this.settings);
+    
+    // 应用主题模式
+    this.applyThemeMode();
+    
     // 保存后重新加载以确保状态同步
     await this.loadSettings();
+  }
+
+  /**
+   * 应用主题模式
+   */
+  applyThemeMode(): void {
+    try {
+      let colorMode = ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET;
+      
+      if (this.settings.themeMode === 'light') {
+        colorMode = ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT;
+      } else if (this.settings.themeMode === 'dark') {
+        colorMode = ConfigurationConstant.ColorMode.COLOR_MODE_DARK;
+      } else {
+        // 'system' - 跟随系统
+        colorMode = ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET;
+      }
+      
+      // 使用动画上下文包装颜色模式切换
+      animateTo({
+        duration: 300,
+        curve: Curve.EaseInOut
+      }, () => {
+        this.context.getApplicationContext().setColorMode(colorMode);
+      });
+      
+      console.info('[SettingsPage] Applied color mode:', this.settings.themeMode, colorMode);
+    } catch (err) {
+      console.error('[SettingsPage] Failed to apply theme mode:', JSON.stringify(err));
+      this.showToast('主题切换失败');
+    }
   }
 
   async handleExportCSV(): Promise<void> {
@@ -401,7 +438,6 @@ export struct SettingsPage {
       .fontColor($r('app.color.text_tertiary'))
       .fontWeight(FontWeight.Medium)
       .padding({ left: 16, top: 20, bottom: 10 })
-      .backgroundColor($r('app.color.background_secondary'))
   }
 
   @Builder

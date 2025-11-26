@@ -6,14 +6,42 @@ import { DataService } from '../services/DataService';
 const DOMAIN = 0x0000;
 
 export default class EntryAbility extends UIAbility {
-  onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
-    try {
-      this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
-    } catch (err) {
-      hilog.error(DOMAIN, 'testTag', 'Failed to set colorMode. Cause: %{public}s', JSON.stringify(err));
-    }
-    
+  async onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): Promise<void> {
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onCreate');
+    
+    // 应用主题设置
+    await this.applyThemeMode();
+  }
+
+  /**
+   * 应用主题模式设置
+   */
+  async applyThemeMode(): Promise<void> {
+    try {
+      // 初始化数据服务
+      await DataService.getInstance().initialize(this.context);
+      
+      // 获取用户设置
+      const settings = await DataService.getInstance().getSettings();
+      
+      // 根据设置应用主题模式
+      let colorMode = ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET;
+      
+      if (settings.themeMode === 'light') {
+        colorMode = ConfigurationConstant.ColorMode.COLOR_MODE_LIGHT;
+      } else if (settings.themeMode === 'dark') {
+        colorMode = ConfigurationConstant.ColorMode.COLOR_MODE_DARK;
+      } else {
+        // 'system' - 跟随系统
+        colorMode = ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET;
+      }
+      
+      this.context.getApplicationContext().setColorMode(colorMode);
+      hilog.info(DOMAIN, 'testTag', 'Applied color mode: %{public}s (value: %{public}d)', 
+        settings.themeMode, colorMode);
+    } catch (err) {
+      hilog.error(DOMAIN, 'testTag', 'Failed to apply theme mode. Cause: %{public}s', JSON.stringify(err));
+    }
   }
 
   onDestroy(): void {
@@ -24,15 +52,13 @@ export default class EntryAbility extends UIAbility {
     // Main window is created, set main page for this ability
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onWindowStageCreate');
 
-    // 等待数据服务初始化完成后再加载页面
-    DataService.getInstance().initialize(this.context).then(() => {
-      windowStage.loadContent('pages/Index', (err) => {
-        if (err.code) {
-          hilog.error(DOMAIN, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err));
-          return;
-        }
-        hilog.info(DOMAIN, 'testTag', 'Succeeded in loading the content.');
-      });
+    // 数据服务已在onCreate中初始化，直接加载页面
+    windowStage.loadContent('pages/Index', (err) => {
+      if (err.code) {
+        hilog.error(DOMAIN, 'testTag', 'Failed to load the content. Cause: %{public}s', JSON.stringify(err));
+        return;
+      }
+      hilog.info(DOMAIN, 'testTag', 'Succeeded in loading the content.');
     });
   }
 
