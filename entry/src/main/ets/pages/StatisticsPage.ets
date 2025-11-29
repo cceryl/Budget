@@ -61,7 +61,12 @@ export struct StatisticsPage {
   ];
 
   aboutToAppear(): void {
-    this.loadData();
+    this.initializeAndLoadData();
+  }
+
+  async initializeAndLoadData(): Promise<void> {
+    await this.dataService.waitForInitialization();
+    await this.loadData();
   }
 
   onRefreshTriggerChange(): void {

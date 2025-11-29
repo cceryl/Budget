@@ -12,7 +12,12 @@ struct CategoryManagePage {
   private dataService: DataService = DataService.getInstance();
 
   aboutToAppear(): void {
-    this.loadCategories();
+    this.initializeAndLoadCategories();
+  }
+
+  async initializeAndLoadCategories(): Promise<void> {
+    await this.dataService.waitForInitialization();
+    await this.loadCategories();
   }
 
   async loadCategories(): Promise<void> {

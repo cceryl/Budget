@@ -86,7 +86,12 @@ export struct SettingsPage {
   private context: common.UIAbilityContext = getContext(this) as common.UIAbilityContext;
 
   aboutToAppear(): void {
-    this.loadSettings();
+    this.initializeAndLoadSettings();
+  }
+
+  async initializeAndLoadSettings(): Promise<void> {
+    await this.dataService.waitForInitialization();
+    await this.loadSettings();
   }
 
   onRefreshTriggerChange(): void {
@@ -633,14 +638,14 @@ export struct SettingsPage {
             this.showDefaultPageDialog = false;
           })
 
-          this.DialogOption('预算', this.settings.defaultPage === 'budget', () => {
-            this.settings.defaultPage = 'budget';
+          this.DialogOption('统计', this.settings.defaultPage === 'stats', () => {
+            this.settings.defaultPage = 'stats';
             this.updateSettings();
             this.showDefaultPageDialog = false;
           })
 
-          this.DialogOption('统计', this.settings.defaultPage === 'stats', () => {
-            this.settings.defaultPage = 'stats';
+          this.DialogOption('预算', this.settings.defaultPage === 'budget', () => {
+            this.settings.defaultPage = 'budget';
             this.updateSettings();
             this.showDefaultPageDialog = false;
           })

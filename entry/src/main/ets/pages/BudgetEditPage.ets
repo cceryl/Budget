@@ -17,6 +17,9 @@ struct BudgetEditPage {
   private dataService: DataService = DataService.getInstance();
 
   async aboutToAppear(): Promise<void> {
+    // 等待DataService初始化
+    await this.dataService.waitForInitialization();
+    
     // 加载分类数据（只加载支出分类）
     const allCategories = await this.dataService.getAllCategories();
     this.categories = allCategories.filter(c => c.type === 'expense');

@@ -10,20 +10,30 @@ import { Settings } from '../models/Settings';
 struct Index {
   @State currentTab: string = 'details'; // 'details' | 'stats' | 'budget' | 'settings'
   @State refreshKey: number = 0; // 用于强制刷新子组件
+  @State isDataReady: boolean = false; // 标记数据服务是否就绪
   private dataService: DataService = DataService.getInstance();
   private hasLoadedSettings: boolean = false;
   private isFirstShow: boolean = true; // 标记是否是首次显示
 
   async aboutToAppear(): Promise<void> {
+    // 等待数据服务初始化完成
+    await this.dataService.waitForInitialization();
+    
     // 加载设置并应用默认页面
     if (!this.hasLoadedSettings) {
       const settings: Settings = await this.dataService.getSettings();
       this.currentTab = settings.defaultPage;
       this.hasLoadedSettings = true;
     }
+    
+    // 标记数据已就绪
+    this.isDataReady = true;
   }
 
   async onPageShow(): Promise<void> {
+    // 确保数据服务已初始化
+    await this.dataService.waitForInitialization();
+    
     // 每次页面显示时都刷新数据
     // 首次显示或从后台恢复/其他页面返回时都会触发
     this.refreshKey++;
@@ -31,6 +41,11 @@ struct Index {
     // 首次显示后，标记为false
     if (this.isFirstShow) {
       this.isFirstShow = false;
+    }
+    
+    // 确保数据就绪状态为true
+    if (!this.isDataReady) {
+      this.isDataReady = true;
     }
     
     // 重新加载设置（可能在设置页修改了默认页面，但不切换当前标签）
@@ -49,14 +64,26 @@ struct Index {
     Stack({ alignContent: Alignment.Bottom }) {
       // 主内容区
       Column() {
-        if (this.currentTab === 'details') {
-          TransactionListPage({ refreshTrigger: this.refreshKey })
-        } else if (this.currentTab === 'stats') {
-          StatisticsPage({ refreshTrigger: this.refreshKey })
-        } else if (this.currentTab === 'budget') {
-          BudgetPage({ refreshTrigger: this.refreshKey })
-        } else if (this.currentTab === 'settings') {
-          SettingsPage({ refreshTrigger: this.refreshKey })
+        if (this.isDataReady) {
+          if (this.currentTab === 'details') {
+            TransactionListPage({ refreshTrigger: this.refreshKey })
+          } else if (this.currentTab === 'stats') {
+            StatisticsPage({ refreshTrigger: this.refreshKey })
+          } else if (this.currentTab === 'budget') {
+            BudgetPage({ refreshTrigger: this.refreshKey })
+          } else if (this.currentTab === 'settings') {
+            SettingsPage({ refreshTrigger: this.refreshKey })
+          }
+        } else {
+          // 数据加载中显示占位符
+          Column() {
+            Text('加载中...')
+              .fontSize(16)
+              .fontColor($r('app.color.text_secondary'))
+          }
+          .width('100%')
+          .height('100%')
+          .justifyContent(FlexAlign.Center)
         }
       }
       .width('100%')

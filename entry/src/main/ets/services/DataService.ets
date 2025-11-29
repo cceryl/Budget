@@ -28,6 +28,8 @@ export class DataService {
   private readonly BUDGET_KEY = 'budgets';
   private readonly SETTINGS_KEY = 'settings';
   private readonly PREFERENCES_NAME = 'budget_data';
+  private isInitialized: boolean = false;
+  private initializationPromise: Promise<void> | null = null;
 
   private constructor() {}
 
@@ -39,9 +41,42 @@ export class DataService {
   }
 
   /**
+   * 检查是否已初始化
+   */
+  public getIsInitialized(): boolean {
+    return this.isInitialized;
+  }
+
+  /**
+   * 等待初始化完成
+   */
+  public async waitForInitialization(): Promise<void> {
+    if (this.isInitialized) {
+      return;
+    }
+    if (this.initializationPromise) {
+      await this.initializationPromise;
+    }
+  }
+
+  /**
    * 初始化数据存储
    */
   public async initialize(context: Context): Promise<void> {
+    if (this.isInitialized) {
+      return;
+    }
+    
+    if (this.initializationPromise) {
+      await this.initializationPromise;
+      return;
+    }
+    
+    this.initializationPromise = this.doInitialize(context);
+    await this.initializationPromise;
+  }
+
+  private async doInitialize(context: Context): Promise<void> {
     try {
       this.preferencesInstance = await preferences.getPreferences(context, this.PREFERENCES_NAME);
       
@@ -50,8 +85,12 @@ export class DataService {
       if (categories.length === 0) {
         await this.initializeCategories();
       }
+      
+      this.isInitialized = true;
+      console.info('DataService initialized successfully');
     } catch (err) {
       console.error('DataService initialize failed:', err);
+      this.isInitialized = false;
     }
   }
 

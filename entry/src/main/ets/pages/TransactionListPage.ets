@@ -15,9 +15,13 @@ export struct TransactionListPage {
   @State currencySymbol: string = '¥'; // 货币符号
   @Prop @Watch('onRefreshTriggerChange') refreshTrigger: number = 0; // 接收父组件的刷新触发器
   private dataService: DataService = DataService.getInstance();
+  private hasLoaded: boolean = false;
 
-  aboutToAppear(): void {
-    this.loadData();
+  async aboutToAppear(): Promise<void> {
+    // 确保数据服务已初始化
+    await this.dataService.waitForInitialization();
+    await this.loadData();
+    this.hasLoaded = true;
   }
 
   // 监听刷新触发器变化

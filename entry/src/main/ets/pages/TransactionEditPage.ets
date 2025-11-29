@@ -18,8 +18,13 @@ struct TransactionEditPage {
   private dataService: DataService = DataService.getInstance();
 
   aboutToAppear(): void {
-    this.loadSettings();
-    this.loadCategories();
+    this.initializeAndLoad();
+  }
+
+  async initializeAndLoad(): Promise<void> {
+    await this.dataService.waitForInitialization();
+    await this.loadSettings();
+    await this.loadCategories();
     
     // 检查是否是编辑模式
     const router: Router = this.getUIContext().getRouter();
@@ -27,7 +32,7 @@ struct TransactionEditPage {
     if (params && params['transactionId']) {
       this.transactionId = params['transactionId'] as string;
       this.isEditMode = true;
-      this.loadTransaction();
+      await this.loadTransaction();
     }
   }
 
