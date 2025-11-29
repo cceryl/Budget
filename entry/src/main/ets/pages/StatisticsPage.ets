@@ -51,6 +51,7 @@ export struct StatisticsPage {
   @State showIncomeStats: boolean = false; // 是否显示收入统计（默认显示支出）
   @State currencySymbol: string = '¥'; // 货币符号
   @State showIncomeTrend: boolean = false; // 是否显示收入趋势（默认显示支出）
+  @State dataRefreshKey: number = 0; // 数据刷新计数器，用于强制刷新UI
   @Prop @Watch('onRefreshTriggerChange') refreshTrigger: number = 0;
   
   private dataService: DataService = DataService.getInstance();
@@ -108,6 +109,9 @@ export struct StatisticsPage {
     
     // 计算趋势数据
     this.calculateTrendData(periodTransactions, periodTime);
+    
+    // 递增刷新计数器，强制刷新UI
+    this.dataRefreshKey++;
   }
 
   /**
@@ -543,13 +547,13 @@ export struct StatisticsPage {
       // 饼图（简化版 - 使用圆环图）
       if (this.showIncomeStats) {
         if (this.incomeCategories.length > 0) {
-          this.SimplePieChart(this.incomeCategories, this.totalIncome)
+          this.SimplePieChart()
         } else {
           this.EmptyDataPlaceholder('暂无收入数据')
         }
       } else {
         if (this.expenseCategories.length > 0) {
-          this.SimplePieChart(this.expenseCategories, this.totalExpense)
+          this.SimplePieChart()
         } else {
           this.EmptyDataPlaceholder('暂无支出数据')
         }
@@ -557,9 +561,9 @@ export struct StatisticsPage {
 
       // 分类列表
       if (this.showIncomeStats) {
-        this.CategoryList(this.incomeCategories)
+        this.CategoryList()
       } else {
-        this.CategoryList(this.expenseCategories)
+        this.CategoryList()
       }
     }
     .width('100%')
@@ -574,18 +578,18 @@ export struct StatisticsPage {
    * 简化版饼图（使用堆叠的进度条表示）
    */
   @Builder
-  SimplePieChart(categories: CategoryStatViewModel[], total: number) {
+  SimplePieChart() {
     Column() {
       // 圆环图的替代方案：横向堆叠条
       Row() {
-        ForEach(categories, (cat: CategoryStatViewModel, index: number) => {
+        ForEach(this.showIncomeStats ? this.incomeCategories : this.expenseCategories, (cat: CategoryStatViewModel, index: number) => {
           if (index < 5) { // 只显示前5个分类
             Row()
               .width(`${cat.percentage}%`)
               .height(12)
               .backgroundColor(cat.color)
           }
-        }, (cat: CategoryStatViewModel) => JSON.stringify(cat))
+        }, (cat: CategoryStatViewModel) => `${this.dataRefreshKey}-${cat.categoryId}`)
       }
       .width('100%')
       .borderRadius(6)
@@ -593,7 +597,7 @@ export struct StatisticsPage {
 
       // 图例
       Column() {
-        ForEach(categories, (cat: CategoryStatViewModel, index: number) => {
+        ForEach(this.showIncomeStats ? this.incomeCategories : this.expenseCategories, (cat: CategoryStatViewModel, index: number) => {
           if (index < 5) { // 只显示前5个分类
             Row() {
               Row()
@@ -616,11 +620,11 @@ export struct StatisticsPage {
             .width('100%')
             .margin({ bottom: 8 })
           }
-        }, (cat: CategoryStatViewModel) => cat.categoryId)
+        }, (cat: CategoryStatViewModel) => `${this.dataRefreshKey}-${cat.categoryId}`)
 
         // 如果分类超过5个，显示"其他"
-        if (categories.length > 5) {
-          Text(`...还有${categories.length - 5}个分类`)
+        if ((this.showIncomeStats ? this.incomeCategories.length : this.expenseCategories.length) > 5) {
+          Text(`...还有${(this.showIncomeStats ? this.incomeCategories.length : this.expenseCategories.length) - 5}个分类`)
             .fontSize(12)
             .fontColor('#999999')
             .margin({ top: 4 })
@@ -635,7 +639,7 @@ export struct StatisticsPage {
    * 分类列表
    */
   @Builder
-  CategoryList(categories: CategoryStatViewModel[]) {
+  CategoryList() {
     Column() {
       Text('详细列表')
         .fontSize(16)
@@ -644,7 +648,7 @@ export struct StatisticsPage {
         .width('100%')
         .margin({ top: 20, bottom: 14 })
 
-      ForEach(categories, (cat: CategoryStatViewModel) => {
+      ForEach(this.showIncomeStats ? this.incomeCategories : this.expenseCategories, (cat: CategoryStatViewModel) => {
         Column({ space: 8 }) {
           Row() {
             Row()
@@ -692,7 +696,7 @@ export struct StatisticsPage {
         .padding({ top: 12, bottom: 12 })
         .borderWidth({ bottom: 1 })
         .borderColor($r('app.color.divider'))
-      }, (cat: CategoryStatViewModel) => JSON.stringify(cat))
+      }, (cat: CategoryStatViewModel) => `${this.dataRefreshKey}-${cat.categoryId}`)
     }
     .width('100%')
   }
@@ -834,7 +838,7 @@ export struct StatisticsPage {
             .layoutWeight(1)
             .justifyContent(FlexAlign.End)
             .clip(false)
-          }, (point: TrendDataPoint) => JSON.stringify(point))
+          }, (point: TrendDataPoint) => `${this.dataRefreshKey}-${point.timestamp}`)
         }
         .width('100%')
         .margin({ top: 16 })
