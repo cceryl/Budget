@@ -346,6 +346,22 @@ export struct StatisticsPage {
           .fontSize(26)
           .fontWeight(FontWeight.Bold)
           .fontColor($r('app.color.text_primary'))
+
+        Blank()
+
+        // 财务助手按钮
+        Button({ type: ButtonType.Circle }) {
+          Text('💬')
+            .fontSize(20)
+        }
+        .width(44)
+        .height(44)
+        .backgroundColor($r('app.color.primary_color'))
+        .onClick(() => {
+          this.getUIContext().getRouter().pushUrl({
+            url: 'pages/ChatPage'
+          });
+        })
       }
       .width('100%')
       .height(64)

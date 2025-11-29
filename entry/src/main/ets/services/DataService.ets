@@ -3,6 +3,7 @@ import { Transaction, TransactionJson } from '../models/Transaction';
 import { Category, CategoryJson, PRESET_CATEGORIES } from '../models/Category';
 import { Budget, BudgetJson } from '../models/Budget';
 import { Settings, SettingsJson } from '../models/Settings';
+import { ChatMessage, ChatMessageJson } from '../models/ChatMessage';
 
 /**
  * 导出数据的完整结构接口
@@ -27,6 +28,7 @@ export class DataService {
   private readonly CATEGORY_KEY = 'categories';
   private readonly BUDGET_KEY = 'budgets';
   private readonly SETTINGS_KEY = 'settings';
+  private readonly CHAT_MESSAGES_KEY = 'chat_messages';
   private readonly PREFERENCES_NAME = 'budget_data';
   private isInitialized: boolean = false;
   private initializationPromise: Promise<void> | null = null;
@@ -613,6 +615,63 @@ export class DataService {
       return true;
     } catch (err) {
       console.error('Clear data failed:', err);
+      return false;
+    }
+  }
+
+  // ==================== ChatMessage CRUD ====================
+
+  /**
+   * 添加聊天消息
+   */
+  public async addChatMessage(message: ChatMessage): Promise<boolean> {
+    try {
+      const messages = await this.getAllChatMessages();
+      messages.push(message);
+      return await this.saveChatMessages(messages);
+    } catch (err) {
+      console.error('Add chat message failed:', err);
+      return false;
+    }
+  }
+
+  /**
+   * 获取所有聊天消息
+   */
+  public async getAllChatMessages(): Promise<ChatMessage[]> {
+    try {
+      const jsonStr = await this.preferencesInstance?.get(this.CHAT_MESSAGES_KEY, '[]') as string;
+      const jsonArray = JSON.parse(jsonStr) as Array<ChatMessageJson>;
+      return jsonArray.map(json => ChatMessage.fromJson(json));
+    } catch (err) {
+      console.error('Get all chat messages failed:', err);
+      return [];
+    }
+  }
+
+  /**
+   * 清空聊天消息
+   */
+  public async clearChatMessages(): Promise<boolean> {
+    try {
+      return await this.saveChatMessages([]);
+    } catch (err) {
+      console.error('Clear chat messages failed:', err);
+      return false;
+    }
+  }
+
+  /**
+   * 保存聊天消息列表
+   */
+  private async saveChatMessages(messages: ChatMessage[]): Promise<boolean> {
+    try {
+      const jsonArray = messages.map(m => m.toJson());
+      await this.preferencesInstance?.put(this.CHAT_MESSAGES_KEY, JSON.stringify(jsonArray));
+      await this.preferencesInstance?.flush();
+      return true;
+    } catch (err) {
+      console.error('Save chat messages failed:', err);
       return false;
     }
   }

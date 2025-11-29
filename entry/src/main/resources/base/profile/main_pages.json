@@ -3,6 +3,7 @@
     "pages/Index",
     "pages/TransactionEditPage",
     "pages/CategoryManagePage",
-    "pages/BudgetEditPage"
+    "pages/BudgetEditPage",
+    "pages/ChatPage"
   ]
 }

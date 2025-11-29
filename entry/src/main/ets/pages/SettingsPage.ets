@@ -83,7 +83,7 @@ export struct SettingsPage {
   @State showConfirmRestoreDialog: boolean = false;
   @Prop @Watch('onRefreshTriggerChange') refreshTrigger: number = 0;
   private dataService: DataService = DataService.getInstance();
-  private context: common.UIAbilityContext = getContext(this) as common.UIAbilityContext;
+  private context: common.UIAbilityContext = this.getUIContext().getHostContext() as common.UIAbilityContext;
 
   aboutToAppear(): void {
     this.initializeAndLoadSettings();
@@ -141,7 +141,7 @@ export struct SettingsPage {
       }
       
       // 使用动画上下文包装颜色模式切换
-      animateTo({
+      this.getUIContext().animateTo({
         duration: 300,
         curve: Curve.EaseInOut
       }, () => {
