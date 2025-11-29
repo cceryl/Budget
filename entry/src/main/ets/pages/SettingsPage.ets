@@ -80,6 +80,7 @@ export struct SettingsPage {
   @State showDefaultPageDialog: boolean = false;
   @State showAboutDialog: boolean = false;
   @State showConfirmClearDialog: boolean = false;
+  @State showConfirmRestoreDialog: boolean = false;
   @Prop @Watch('onRefreshTriggerChange') refreshTrigger: number = 0;
   private dataService: DataService = DataService.getInstance();
   private context: common.UIAbilityContext = getContext(this) as common.UIAbilityContext;
@@ -218,6 +219,13 @@ export struct SettingsPage {
   }
 
   async handleRestore(): Promise<void> {
+    // 先显示警告对话框
+    this.showConfirmRestoreDialog = true;
+  }
+
+  async confirmRestore(): Promise<void> {
+    this.showConfirmRestoreDialog = false;
+    
     try {
       // 使用文件选择器选择文件
       try {
@@ -424,6 +432,11 @@ export struct SettingsPage {
       // 确认清空数据对话框
       if (this.showConfirmClearDialog) {
         this.ConfirmClearDialog()
+      }
+
+      // 确认恢复数据对话框
+      if (this.showConfirmRestoreDialog) {
+        this.ConfirmRestoreDialog()
       }
     }
     .width('100%')
@@ -812,6 +825,100 @@ export struct SettingsPage {
             .borderRadius(12)
             .onClick(() => {
               this.confirmClearData();
+            })
+        }
+        .width('100%')
+        .justifyContent(FlexAlign.SpaceBetween)
+      }
+      .width('85%')
+      .padding(24)
+      .backgroundColor($r('app.color.card_background'))
+      .borderRadius(16)
+      .shadow({ radius: 16, color: $r('app.color.shadow_medium'), offsetY: 8 })
+      .position({ x: '7.5%', y: '25%' })
+    }
+    .width('100%')
+    .height('100%')
+    .position({ x: 0, y: 0 })
+    .zIndex(999)
+  }
+
+  @Builder
+  ConfirmRestoreDialog() {
+    Column() {
+      // 遮罩层
+      Column()
+        .width('100%')
+        .height('100%')
+        .backgroundColor($r('app.color.overlay_background'))
+        .opacity(0.5)
+        .onClick(() => {
+          this.showConfirmRestoreDialog = false;
+        })
+
+      // 对话框
+      Column() {
+        Text('⚠️ 警告')
+          .fontSize(20)
+          .fontWeight(FontWeight.Bold)
+          .fontColor($r('app.color.accent_danger'))
+          .margin({ bottom: 16 })
+
+        Text('恢复数据将覆盖当前所有数据，包括：')
+          .fontSize(16)
+          .fontColor($r('app.color.text_primary'))
+          .margin({ bottom: 12 })
+
+        Text('• 所有交易记录')
+          .fontSize(14)
+          .fontColor($r('app.color.text_secondary'))
+          .width('100%')
+          .margin({ bottom: 4 })
+
+        Text('• 自定义分类')
+          .fontSize(14)
+          .fontColor($r('app.color.text_secondary'))
+          .width('100%')
+          .margin({ bottom: 4 })
+
+        Text('• 预算设置')
+          .fontSize(14)
+          .fontColor($r('app.color.text_secondary'))
+          .width('100%')
+          .margin({ bottom: 4 })
+
+        Text('• 应用设置')
+          .fontSize(14)
+          .fontColor($r('app.color.text_secondary'))
+          .width('100%')
+          .margin({ bottom: 16 })
+
+        Text('当前数据将会丢失，是否继续？')
+          .fontSize(14)
+          .fontColor($r('app.color.accent_danger'))
+          .fontWeight(FontWeight.Bold)
+          .margin({ bottom: 20 })
+
+        // 按钮
+        Row() {
+          Button('取消')
+            .width('48%')
+            .height(44)
+            .backgroundColor($r('app.color.button_secondary_bg'))
+            .fontColor($r('app.color.button_secondary_text'))
+            .borderRadius(12)
+            .onClick(() => {
+              this.showConfirmRestoreDialog = false;
+            })
+
+          Button('确认恢复')
+            .width('48%')
+            .height(44)
+            .backgroundColor($r('app.color.accent_danger'))
+            .fontColor('#FFFFFF')
+            .borderRadius(12)
+            .onClick(() => {
+              this.confirmRestore();
             })
         }
         .width('100%')

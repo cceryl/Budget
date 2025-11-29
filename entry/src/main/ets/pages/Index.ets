@@ -12,6 +12,7 @@ struct Index {
   @State refreshKey: number = 0; // 用于强制刷新子组件
   private dataService: DataService = DataService.getInstance();
   private hasLoadedSettings: boolean = false;
+  private isFirstShow: boolean = true; // 标记是否是首次显示
 
   async aboutToAppear(): Promise<void> {
     // 加载设置并应用默认页面
@@ -23,8 +24,14 @@ struct Index {
   }
 
   async onPageShow(): Promise<void> {
-    // 从编辑页或设置页返回时刷新
+    // 每次页面显示时都刷新数据
+    // 首次显示或从后台恢复/其他页面返回时都会触发
     this.refreshKey++;
+    
+    // 首次显示后，标记为false
+    if (this.isFirstShow) {
+      this.isFirstShow = false;
+    }
     
     // 重新加载设置（可能在设置页修改了默认页面，但不切换当前标签）
     const settings: Settings = await this.dataService.getSettings();

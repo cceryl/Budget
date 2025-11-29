@@ -121,6 +121,7 @@ struct CategoryManagePage {
         .tabBar('收入分类')
       }
       .vertical(false)
+      .scrollable(false)
       .barMode(BarMode.Fixed)
       .barWidth('100%')
       .barHeight(48)
@@ -163,25 +164,36 @@ struct CategoryManagePage {
             }
             .alignItems(HorizontalAlign.Start)
             .layoutWeight(1)
-
-            if (!category.isPreset) {
-              Button('删除')
-                .fontSize(14)
-                .backgroundColor('#F44336')
-                .fontColor('#ffffff')
-                .onClick(() => this.deleteCategory(category.id))
-            }
           }
           .width('100%')
           .padding(16)
           .backgroundColor('#ffffff')
         }
+        .swipeAction({ end: this.DeleteButton(category.id, category.isPreset) })
       }, (category: Category) => category.id)
     }
     .width('100%')
     .height('100%')
     .backgroundColor('#f5f5f5')
     .divider({ strokeWidth: 1, color: '#f0f0f0' })
+  }
+
+  @Builder
+  DeleteButton(categoryId: string, isPreset: boolean) {
+    if (!isPreset) {
+      Button() {
+        Text('删除')
+          .fontSize(16)
+          .fontColor('#FFFFFF')
+      }
+      .width(80)
+      .height('100%')
+      .backgroundColor('#F44336')
+      .borderRadius(12)
+      .onClick(() => {
+        this.deleteCategory(categoryId);
+      })
+    }
   }
 
   @Builder

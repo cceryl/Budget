@@ -352,9 +352,9 @@ export struct StatisticsPage {
           .backgroundColor(this.currentPeriod === 'week' ? $r('app.color.primary_color') : $r('app.color.button_secondary_bg'))
           .fontColor(this.currentPeriod === 'week' ? '#FFFFFF' : $r('app.color.button_secondary_text'))
           .borderRadius(18)
-          .onClick(() => {
+          .onClick(async () => {
             this.currentPeriod = 'week';
-            this.loadData();
+            await this.loadData();
           })
 
         Button('月')
@@ -364,9 +364,9 @@ export struct StatisticsPage {
           .backgroundColor(this.currentPeriod === 'month' ? $r('app.color.primary_color') : $r('app.color.button_secondary_bg'))
           .fontColor(this.currentPeriod === 'month' ? '#FFFFFF' : $r('app.color.button_secondary_text'))
           .borderRadius(18)
-          .onClick(() => {
+          .onClick(async () => {
             this.currentPeriod = 'month';
-            this.loadData();
+            await this.loadData();
           })
 
         Button('年')
@@ -376,9 +376,9 @@ export struct StatisticsPage {
           .backgroundColor(this.currentPeriod === 'year' ? $r('app.color.primary_color') : $r('app.color.button_secondary_bg'))
           .fontColor(this.currentPeriod === 'year' ? '#FFFFFF' : $r('app.color.button_secondary_text'))
           .borderRadius(18)
-          .onClick(() => {
+          .onClick(async () => {
             this.currentPeriod = 'year';
-            this.loadData();
+            await this.loadData();
           })
       }
       .width('100%')
@@ -580,7 +580,7 @@ export struct StatisticsPage {
               .height(12)
               .backgroundColor(cat.color)
           }
-        }, (cat: CategoryStatViewModel) => cat.categoryId)
+        }, (cat: CategoryStatViewModel) => JSON.stringify(cat))
       }
       .width('100%')
       .borderRadius(6)
@@ -687,7 +687,7 @@ export struct StatisticsPage {
         .padding({ top: 12, bottom: 12 })
         .borderWidth({ bottom: 1 })
         .borderColor($r('app.color.divider'))
-      }, (cat: CategoryStatViewModel) => cat.categoryId)
+      }, (cat: CategoryStatViewModel) => JSON.stringify(cat))
     }
     .width('100%')
   }

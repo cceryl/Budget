@@ -178,9 +178,9 @@ export struct BudgetPage {
           .backgroundColor(this.currentPeriod === 'week' ? $r('app.color.primary_color') : $r('app.color.button_secondary_bg'))
           .fontColor(this.currentPeriod === 'week' ? '#FFFFFF' : $r('app.color.button_secondary_text'))
           .borderRadius(18)
-          .onClick(() => {
+          .onClick(async () => {
             this.currentPeriod = 'week';
-            this.loadData();
+            await this.loadData();
           })
 
         Button('月')
@@ -190,9 +190,9 @@ export struct BudgetPage {
           .backgroundColor(this.currentPeriod === 'month' ? $r('app.color.primary_color') : $r('app.color.button_secondary_bg'))
           .fontColor(this.currentPeriod === 'month' ? '#FFFFFF' : $r('app.color.button_secondary_text'))
           .borderRadius(18)
-          .onClick(() => {
+          .onClick(async () => {
             this.currentPeriod = 'month';
-            this.loadData();
+            await this.loadData();
           })
 
         Button('年')
@@ -202,9 +202,9 @@ export struct BudgetPage {
           .backgroundColor(this.currentPeriod === 'year' ? $r('app.color.primary_color') : $r('app.color.button_secondary_bg'))
           .fontColor(this.currentPeriod === 'year' ? '#FFFFFF' : $r('app.color.button_secondary_text'))
           .borderRadius(18)
-          .onClick(() => {
+          .onClick(async () => {
             this.currentPeriod = 'year';
-            this.loadData();
+            await this.loadData();
           })
       }
       .width('100%')
@@ -219,7 +219,7 @@ export struct BudgetPage {
               this.BudgetItem(viewModel)
             }
             .swipeAction({ end: this.DeleteButton(viewModel.budget.id) })
-          }, (viewModel: BudgetViewModel) => JSON.stringify(viewModel.budget))
+          }, (viewModel: BudgetViewModel) => JSON.stringify(viewModel))
         }
         .width('100%')
         .layoutWeight(1)

@@ -218,17 +218,6 @@ struct TransactionEditPage {
       .padding({ left: 16, right: 16 })
       .backgroundColor('#ffffff')
 
-      // 编辑模式下显示删除按钮
-      if (this.isEditMode) {
-        Button('删除此交易')
-          .width('90%')
-          .height(48)
-          .margin({ left: '5%', right: '5%', top: 16 })
-          .backgroundColor('#F44336')
-          .fontColor('#ffffff')
-          .onClick(() => this.deleteTransaction())
-      }
-
       Scroll() {
         Column() {
           // 交易类型选择
