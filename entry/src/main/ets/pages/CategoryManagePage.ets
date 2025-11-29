@@ -9,7 +9,9 @@ struct CategoryManagePage {
   @State selectedTab: number = 0; // 0: 支出, 1: 收入
   @State showAddDialog: boolean = false;
   @State newCategoryName: string = '';
+  @State categoryNameError: string = ''; // 分类名称错误提示
   private dataService: DataService = DataService.getInstance();
+  private readonly MAX_CATEGORY_NAME_LENGTH: number = 10; // 最大分类名称长度
 
   aboutToAppear(): void {
     this.initializeAndLoadCategories();
@@ -29,6 +31,47 @@ struct CategoryManagePage {
     return this.categories.filter(c => c.type === type);
   }
 
+  /**
+   * 验证分类名称
+   */
+  validateCategoryName(name: string): boolean {
+    this.categoryNameError = '';
+    
+    // 去除首尾空格
+    const trimmedName = name.trim();
+    
+    // 空值检查
+    if (trimmedName === '') {
+      this.categoryNameError = '分类名称不能为空';
+      return false;
+    }
+    
+    // 长度检查
+    if (trimmedName.length > this.MAX_CATEGORY_NAME_LENGTH) {
+      this.categoryNameError = `分类名称最多${this.MAX_CATEGORY_NAME_LENGTH}字符`;
+      return false;
+    }
+    
+    // 检查是否全为空白字符
+    if (!/\S/.test(name)) {
+      this.categoryNameError = '分类名称不能只包含空格';
+      return false;
+    }
+    
+    // 检查重复
+    const type = this.selectedTab === 0 ? 'expense' : 'income';
+    const isDuplicate = this.categories.some(c => 
+      c.type === type && c.name.trim() === trimmedName
+    );
+    
+    if (isDuplicate) {
+      this.categoryNameError = '分类名称已存在';
+      return false;
+    }
+    
+    return true;
+  }
+
   async deleteCategory(id: string): Promise<void> {
     const success = await this.dataService.deleteCategory(id);
     if (success) {
@@ -42,8 +85,9 @@ struct CategoryManagePage {
   }
 
   async addCategory(): Promise<void> {
-    if (this.newCategoryName.trim() === '') {
-      this.showToast('请输入分类名称');
+    // 验证分类名称
+    if (!this.validateCategoryName(this.newCategoryName)) {
+      this.showToast(this.categoryNameError);
       return;
     }
 
@@ -60,6 +104,7 @@ struct CategoryManagePage {
     if (success) {
       this.showToast('添加成功');
       this.newCategoryName = '';
+      this.categoryNameError = '';
       this.showAddDialog = false;
       this.loadCategories();
     } else {
@@ -213,6 +258,7 @@ struct CategoryManagePage {
         .onClick(() => {
           this.showAddDialog = false;
           this.newCategoryName = '';
+          this.categoryNameError = '';
         })
 
       // 对话框
@@ -223,16 +269,42 @@ struct CategoryManagePage {
           .fontColor('#1a1a1a')
           .margin({ bottom: 16 })
 
-        TextInput({ text: this.newCategoryName, placeholder: '请输入分类名称' })
+        Column() {
+          Row() {
+            Text('分类名称')
+              .fontSize(14)
+              .fontColor('#666666')
+            
+            Blank()
+            
+            Text(`${this.newCategoryName.length}/${this.MAX_CATEGORY_NAME_LENGTH}`)
+              .fontSize(12)
+              .fontColor(this.newCategoryName.length > this.MAX_CATEGORY_NAME_LENGTH ? '#F44336' : '#999999')
+          }
           .width('100%')
-          .height(48)
-          .fontSize(16)
-          .backgroundColor('#f5f5f5')
-          .borderRadius(8)
-          .onChange((value: string) => {
-            this.newCategoryName = value;
-          })
-          .margin({ bottom: 24 })
+          .margin({ bottom: 8 })
+
+          TextInput({ text: this.newCategoryName, placeholder: '请输入分类名称' })
+            .width('100%')
+            .height(48)
+            .fontSize(16)
+            .backgroundColor('#f5f5f5')
+            .borderRadius(8)
+            .onChange((value: string) => {
+              this.newCategoryName = value;
+              this.validateCategoryName(value);
+            })
+
+          if (this.categoryNameError !== '') {
+            Text(this.categoryNameError)
+              .fontSize(12)
+              .fontColor('#F44336')
+              .margin({ top: 4 })
+              .width('100%')
+          }
+        }
+        .width('100%')
+        .margin({ bottom: 24 })
 
         Row() {
           Button('取消')
@@ -244,6 +316,7 @@ struct CategoryManagePage {
             .onClick(() => {
               this.showAddDialog = false;
               this.newCategoryName = '';
+              this.categoryNameError = '';
             })
 
           Button('确定')

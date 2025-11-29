@@ -14,7 +14,9 @@ struct BudgetEditPage {
   @State showCategorySelector: boolean = false;
   @State isEditMode: boolean = false;
   @State currentBudgetId: string = '';
+  @State amountError: string = ''; // 金额错误提示
   private dataService: DataService = DataService.getInstance();
+  private readonly MAX_AMOUNT: number = 100000000; // 最大金额1亿元
 
   async aboutToAppear(): Promise<void> {
     // 等待DataService初始化
@@ -65,17 +67,104 @@ struct BudgetEditPage {
     return category ? category.name : '请选择分类';
   }
 
+  /**
+   * 验证金额输入
+   */
+  validateAmount(value: string): boolean {
+    this.amountError = '';
+    
+    // 空值检查
+    if (value === '') {
+      return true; // 空值允许，但保存时会检查
+    }
+    
+    // 格式检查：只允许数字和一个小数点
+    const regex = /^\d*\.?\d*$/;
+    if (!regex.test(value)) {
+      this.amountError = '金额格式不正确';
+      return false;
+    }
+    
+    // 检查小数点个数
+    const dotCount = (value.match(/\./g) || []).length;
+    if (dotCount > 1) {
+      this.amountError = '只能有一个小数点';
+      return false;
+    }
+    
+    // 检查小数位数
+    if (value.includes('.')) {
+      const parts = value.split('.');
+      if (parts[1].length > 2) {
+        this.amountError = '最多保留2位小数';
+        return false;
+      }
+    }
+    
+    // 数值范围检查
+    const numValue = parseFloat(value);
+    if (!isNaN(numValue)) {
+      if (numValue < 0) {
+        this.amountError = '金额不能为负数';
+        return false;
+      }
+      if (numValue === 0) {
+        this.amountError = '金额必须大于0';
+        return false;
+      }
+      if (numValue > this.MAX_AMOUNT) {
+        this.amountError = '金额超过上限';
+        return false;
+      }
+    }
+    
+    return true;
+  }
+
+  /**
+   * 格式化金额输入
+   */
+  formatAmountInput(value: string): string {
+    // 移除非数字和小数点的字符
+    let cleaned = value.replace(/[^\d.]/g, '');
+    
+    // 确保只有一个小数点
+    const parts = cleaned.split('.');
+    if (parts.length > 2) {
+      cleaned = parts[0] + '.' + parts.slice(1).join('');
+    }
+    
+    // 限制小数位数为2位
+    if (parts.length === 2 && parts[1].length > 2) {
+      cleaned = parts[0] + '.' + parts[1].substring(0, 2);
+    }
+    
+    return cleaned;
+  }
+
   async saveBudget(): Promise<void> {
     try {
       const promptAction = this.getUIContext().getPromptAction();
 
-      // 验证输入
+      // 验证分类
       if (this.budgetType === 'category' && !this.selectedCategoryId) {
         promptAction.showToast({ message: '请选择分类' });
         return;
       }
 
-      if (!this.amount || parseFloat(this.amount) <= 0) {
+      // 验证金额
+      if (!this.amount || this.amount === '') {
+        promptAction.showToast({ message: '请输入预算金额' });
+        return;
+      }
+      
+      if (!this.validateAmount(this.amount)) {
+        promptAction.showToast({ message: this.amountError !== '' ? this.amountError : '金额格式不正确' });
+        return;
+      }
+      
+      const amountNum = parseFloat(this.amount);
+      if (isNaN(amountNum) || amountNum <= 0) {
         promptAction.showToast({ message: '请输入有效的预算金额' });
         return;
       }
@@ -269,20 +358,30 @@ struct BudgetEditPage {
         }
 
         // 预算金额
-        Row() {
+        Column() {
           Text('预算金额：')
             .fontSize(16)
             .fontColor('#1a1a1a')
-            .width(100)
+            .width('100%')
+            .margin({ bottom: 8 })
 
           TextInput({ placeholder: '请输入金额', text: this.amount })
             .fontSize(16)
             .type(InputType.NUMBER_DECIMAL)
-            .layoutWeight(1)
+            .width('100%')
             .backgroundColor('#f5f5f5')
             .onChange((value: string) => {
-              this.amount = value;
+              const formatted = this.formatAmountInput(value);
+              this.amount = formatted;
+              this.validateAmount(formatted);
             })
+
+          if (this.amountError !== '') {
+            Text(this.amountError)
+              .fontSize(12)
+              .fontColor('#F44336')
+              .margin({ top: 4 })
+          }
         }
         .width('100%')
         .padding(16)

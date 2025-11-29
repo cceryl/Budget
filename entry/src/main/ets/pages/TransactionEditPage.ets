@@ -15,7 +15,11 @@ struct TransactionEditPage {
   @State categories: Category[] = [];
   @State isEditMode: boolean = false;
   @State currencySymbol: string = '¥'; // 货币符号
+  @State amountError: string = ''; // 金额错误提示
+  @State descriptionError: string = ''; // 描述错误提示
   private dataService: DataService = DataService.getInstance();
+  private readonly MAX_AMOUNT: number = 100000000; // 最大金额1亿元
+  private readonly MAX_DESCRIPTION_LENGTH: number = 100; // 最大描述长度
 
   aboutToAppear(): void {
     this.initializeAndLoad();
@@ -69,14 +73,32 @@ struct TransactionEditPage {
   }
 
   async saveTransaction(): Promise<void> {
-    // 验证输入
-    if (this.amount === '' || parseFloat(this.amount) <= 0) {
+    // 验证金额
+    if (this.amount === '') {
+      this.showToast('请输入金额');
+      return;
+    }
+    
+    if (!this.validateAmount(this.amount)) {
+      this.showToast(this.amountError !== '' ? this.amountError : '金额格式不正确');
+      return;
+    }
+    
+    const amountNum = parseFloat(this.amount);
+    if (isNaN(amountNum) || amountNum <= 0) {
       this.showToast('请输入有效金额');
       return;
     }
 
+    // 验证分类
     if (this.selectedCategoryId === '') {
       this.showToast('请选择分类');
+      return;
+    }
+    
+    // 验证描述
+    if (!this.validateDescription(this.description)) {
+      this.showToast(this.descriptionError);
       return;
     }
 
@@ -192,6 +214,95 @@ struct TransactionEditPage {
     return category ? category.name : '请选择';
   }
 
+  /**
+   * 验证金额输入
+   */
+  validateAmount(value: string): boolean {
+    this.amountError = '';
+    
+    // 空值检查
+    if (value === '') {
+      return true; // 空值允许，但保存时会检查
+    }
+    
+    // 格式检查：只允许数字和一个小数点
+    const regex = /^\d*\.?\d*$/;
+    if (!regex.test(value)) {
+      this.amountError = '金额格式不正确';
+      return false;
+    }
+    
+    // 检查小数点个数
+    const dotCount = (value.match(/\./g) || []).length;
+    if (dotCount > 1) {
+      this.amountError = '只能有一个小数点';
+      return false;
+    }
+    
+    // 检查小数位数
+    if (value.includes('.')) {
+      const parts = value.split('.');
+      if (parts[1].length > 2) {
+        this.amountError = '最多保留2位小数';
+        return false;
+      }
+    }
+    
+    // 数值范围检查
+    const numValue = parseFloat(value);
+    if (!isNaN(numValue)) {
+      if (numValue < 0) {
+        this.amountError = '金额不能为负数';
+        return false;
+      }
+      if (numValue > this.MAX_AMOUNT) {
+        this.amountError = '金额超过上限';
+        return false;
+      }
+      if (numValue === 0) {
+        this.amountError = '金额必须大于0';
+        return false;
+      }
+    }
+    
+    return true;
+  }
+
+  /**
+   * 格式化金额输入
+   */
+  formatAmountInput(value: string): string {
+    // 移除非数字和小数点的字符
+    let cleaned = value.replace(/[^\d.]/g, '');
+    
+    // 确保只有一个小数点
+    const parts = cleaned.split('.');
+    if (parts.length > 2) {
+      cleaned = parts[0] + '.' + parts.slice(1).join('');
+    }
+    
+    // 限制小数位数为2位
+    if (parts.length === 2 && parts[1].length > 2) {
+      cleaned = parts[0] + '.' + parts[1].substring(0, 2);
+    }
+    
+    return cleaned;
+  }
+
+  /**
+   * 验证描述输入
+   */
+  validateDescription(value: string): boolean {
+    this.descriptionError = '';
+    
+    if (value.length > this.MAX_DESCRIPTION_LENGTH) {
+      this.descriptionError = `描述最多${this.MAX_DESCRIPTION_LENGTH}字符`;
+      return false;
+    }
+    
+    return true;
+  }
+
   build() {
     Column() {
       // 标题栏
@@ -288,10 +399,19 @@ struct TransactionEditPage {
                 .backgroundColor('#ffffff')
                 .layoutWeight(1)
                 .onChange((value: string) => {
-                  this.amount = value;
+                  const formatted = this.formatAmountInput(value);
+                  this.amount = formatted;
+                  this.validateAmount(formatted);
                 })
             }
             .width('100%')
+
+            if (this.amountError !== '') {
+              Text(this.amountError)
+                .fontSize(12)
+                .fontColor('#F44336')
+                .margin({ top: 4 })
+            }
           }
           .width('100%')
           .padding(16)
@@ -370,10 +490,19 @@ struct TransactionEditPage {
 
           // 备注输入
           Column() {
-            Text('备注')
-              .fontSize(14)
-              .fontColor('#666666')
-              .margin({ bottom: 8 })
+            Row() {
+              Text('备注')
+                .fontSize(14)
+                .fontColor('#666666')
+              
+              Blank()
+              
+              Text(`${this.description.length}/${this.MAX_DESCRIPTION_LENGTH}`)
+                .fontSize(12)
+                .fontColor(this.description.length > this.MAX_DESCRIPTION_LENGTH ? '#F44336' : '#999999')
+            }
+            .width('100%')
+            .margin({ bottom: 8 })
 
             TextArea({ text: this.description, placeholder: '添加备注信息...' })
               .width('100%')
@@ -383,7 +512,15 @@ struct TransactionEditPage {
               .borderRadius(8)
               .onChange((value: string) => {
                 this.description = value;
+                this.validateDescription(value);
               })
+
+            if (this.descriptionError !== '') {
+              Text(this.descriptionError)
+                .fontSize(12)
+                .fontColor('#F44336')
+                .margin({ top: 4 })
+            }
           }
           .width('100%')
           .padding(16)
