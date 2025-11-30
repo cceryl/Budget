@@ -6,6 +6,7 @@ export interface SettingsJson {
   currency: string;
   defaultPage: string;
   language: string;
+  apiKey?: string; // API密钥，仅用于内部存储，不导出
 }
 
 /**
@@ -17,17 +18,20 @@ export class Settings {
   public currency: string; // '¥' | '$' | '€' | '£'
   public defaultPage: string; // 'details' | 'budget' | 'stats'
   public language: string; // 'zh-CN'
+  public apiKey: string; // 千问API密钥
 
   constructor(
     themeMode: string = 'system',
     currency: string = '¥',
     defaultPage: string = 'details',
-    language: string = 'zh-CN'
+    language: string = 'zh-CN',
+    apiKey: string = ''
   ) {
     this.themeMode = themeMode;
     this.currency = currency;
     this.defaultPage = defaultPage;
     this.language = language;
+    this.apiKey = apiKey;
   }
 
   static fromJson(json: SettingsJson): Settings {
@@ -35,16 +39,31 @@ export class Settings {
       json.themeMode as string,
       json.currency as string,
       json.defaultPage as string,
-      json.language as string
+      json.language as string,
+      json.apiKey as string || ''
     );
   }
 
   toJson(): SettingsJson {
+    // 注意：导出时不包含apiKey，保护用户隐私
     return {
       themeMode: this.themeMode,
       currency: this.currency,
       defaultPage: this.defaultPage,
       language: this.language
+    };
+  }
+
+  /**
+   * 转换为JSON（包含apiKey，仅用于本地存储）
+   */
+  toJsonWithApiKey(): SettingsJson {
+    return {
+      themeMode: this.themeMode,
+      currency: this.currency,
+      defaultPage: this.defaultPage,
+      language: this.language,
+      apiKey: this.apiKey
     };
   }
 

@@ -78,9 +78,11 @@ export struct SettingsPage {
   @State showThemeDialog: boolean = false;
   @State showCurrencyDialog: boolean = false;
   @State showDefaultPageDialog: boolean = false;
+  @State showApiKeyDialog: boolean = false;
   @State showAboutDialog: boolean = false;
   @State showConfirmClearDialog: boolean = false;
   @State showConfirmRestoreDialog: boolean = false;
+  @State apiKeyInput: string = '';
   @Prop @Watch('onRefreshTriggerChange') refreshTrigger: number = 0;
   private dataService: DataService = DataService.getInstance();
   private context: common.UIAbilityContext = this.getUIContext().getHostContext() as common.UIAbilityContext;
@@ -106,7 +108,8 @@ export struct SettingsPage {
       loadedSettings.themeMode,
       loadedSettings.currency,
       loadedSettings.defaultPage,
-      loadedSettings.language
+      loadedSettings.language,
+      loadedSettings.apiKey
     );
     // 更新显示文本
     this.themeModeDisplay = this.settings.getThemeModeDisplayName();
@@ -354,6 +357,20 @@ export struct SettingsPage {
           }
         }
 
+        // AI设置分组
+        ListItemGroup({ header: this.GroupHeader('AI助手') }) {
+          ListItem() {
+            SettingItemView({
+              title: '千问API密钥',
+              value: this.settings.apiKey ? '已设置' : '未设置',
+              onItemClick: () => {
+                this.apiKeyInput = this.settings.apiKey;
+                this.showApiKeyDialog = true;
+              }
+            })
+          }
+        }
+
         // 数据管理分组
         ListItemGroup({ header: this.GroupHeader('数据') }) {
           ListItem() {
@@ -427,6 +444,11 @@ export struct SettingsPage {
       // 默认页面选择对话框
       if (this.showDefaultPageDialog) {
         this.DefaultPageDialog()
+      }
+
+      // API密钥配置对话框
+      if (this.showApiKeyDialog) {
+        this.ApiKeyDialog()
       }
 
       // 关于对话框
@@ -668,6 +690,92 @@ export struct SettingsPage {
       .backgroundColor('#ffffff')
       .borderRadius(12)
       .position({ x: '10%', y: '30%' })
+    }
+    .width('100%')
+    .height('100%')
+    .position({ x: 0, y: 0 })
+    .zIndex(999)
+  }
+
+  @Builder
+  ApiKeyDialog() {
+    Column() {
+      // 遮罩层
+      Column()
+        .width('100%')
+        .height('100%')
+        .backgroundColor($r('app.color.overlay_background'))
+        .opacity(0.5)
+        .onClick(() => {
+          this.showApiKeyDialog = false;
+        })
+
+      // 对话框
+      Column() {
+        Text('配置千问API密钥')
+          .fontSize(18)
+          .fontWeight(FontWeight.Bold)
+          .fontColor($r('app.color.text_primary'))
+          .width('100%')
+          .padding({ bottom: 16 })
+          .borderWidth({ bottom: 1 })
+          .borderColor($r('app.color.divider'))
+
+        // 说明文本
+        Text('请输入您的千问API密钥，用于AI聊天功能。密钥将安全保存在本地，不会被导出。')
+          .fontSize(14)
+          .fontColor($r('app.color.text_secondary'))
+          .width('100%')
+          .margin({ top: 16, bottom: 16 })
+          .lineHeight(20)
+
+        // 输入框
+        TextInput({ text: this.apiKeyInput, placeholder: '请输入API密钥 (sk-...)' })
+          .width('100%')
+          .height(44)
+          .fontSize(14)
+          .backgroundColor($r('app.color.card_background'))
+          .borderRadius(8)
+          .padding({ left: 12, right: 12 })
+          .onChange((value: string) => {
+            this.apiKeyInput = value;
+          })
+
+        Row({ space: 12 }) {
+          // 取消按钮
+          Button('取消')
+            .layoutWeight(1)
+            .height(44)
+            .backgroundColor($r('app.color.button_secondary_bg'))
+            .fontColor($r('app.color.button_secondary_text'))
+            .borderRadius(12)
+            .onClick(() => {
+              this.showApiKeyDialog = false;
+            })
+
+          // 保存按钮
+          Button('保存')
+            .layoutWeight(1)
+            .height(44)
+            .backgroundColor($r('app.color.primary_color'))
+            .fontColor('#FFFFFF')
+            .borderRadius(12)
+            .onClick(() => {
+              this.settings.apiKey = this.apiKeyInput;
+              this.updateSettings();
+              this.showApiKeyDialog = false;
+              this.showToast('API密钥已保存');
+            })
+        }
+        .width('100%')
+        .margin({ top: 16 })
+      }
+      .width('80%')
+      .padding(16)
+      .backgroundColor($r('app.color.card_background'))
+      .borderRadius(16)
+      .shadow({ radius: 16, color: $r('app.color.shadow_medium'), offsetY: 8 })
+      .position({ x: '10%', y: '20%' })
     }
     .width('100%')
     .height('100%')

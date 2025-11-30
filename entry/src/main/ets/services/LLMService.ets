@@ -90,12 +90,28 @@ interface QwenNonStreamResponse {
 }
 
 /**
+ * 千问错误详情
+ */
+interface QwenErrorDetail {
+  message?: string;
+  type?: string;
+  code?: string;
+}
+
+/**
+ * 千问错误响应
+ */
+interface QwenErrorResponse {
+  error?: QwenErrorDetail;
+  message?: string;
+}
+
+/**
  * LLM服务类 - 封装千问API调用
  */
 export class LLMService {
   private static instance: LLMService;
   private readonly API_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
-  private readonly API_KEY = 'sk-4b8c9539f4a348dc8dd83ee7a02f207d';
   private readonly MODEL = 'qwen-flash';
   private dataService: DataService = DataService.getInstance();
 
@@ -220,6 +236,15 @@ export class LLMService {
    */
   public async sendMessage(userMessage: string, conversationHistory: QwenMessage[]): Promise<string> {
     try {
+      // 获取API密钥
+      const settings = await this.dataService.getSettings();
+      const apiKey = settings.apiKey;
+      
+      // 检查API密钥是否配置
+      if (!apiKey || apiKey.trim() === '') {
+        return '请先在设置页面配置千问API密钥';
+      }
+
       // 构建系统提示词
       const systemPrompt = await this.buildSystemPrompt();
 
@@ -249,7 +274,7 @@ export class LLMService {
       const requestOptions: http.HttpRequestOptions = {
         method: http.RequestMethod.POST,
         header: {
-          'Authorization': `Bearer ${this.API_KEY}`,
+          'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json'
         },
         extraData: JSON.stringify(requestBody),
@@ -269,18 +294,43 @@ export class LLMService {
           if (content !== undefined && content !== null) {
             return content;
           } else {
-            return `收到了空回复，完整响应: ${response.result}`;
+            return '收到了空回复';
           }
         } else {
-          return `API返回了异常数据结构: ${response.result}`;
+          return 'API返回了异常数据结构';
         }
       } else {
-        const errorMsg = `API请求失败 - HTTP ${response.responseCode}: ${response.result}`;
-        return errorMsg;
+        // 尝试解析错误信息
+        let errorMessage = '';
+        try {
+          const errorData = JSON.parse(response.result as string) as QwenErrorResponse;
+          if (errorData.error && errorData.error.message) {
+            errorMessage = errorData.error.message;
+          } else if (errorData.message) {
+            errorMessage = errorData.message;
+          }
+        } catch (e) {
+          // JSON解析失败，使用原始响应
+        }
+        
+        if (errorMessage) {
+          return `API请求失败 (HTTP ${response.responseCode}): ${errorMessage}`;
+        } else {
+          return `API请求失败 (HTTP ${response.responseCode})`;
+        }
       }
     } catch (err) {
-      const errorMsg = `LLM服务异常: ${JSON.stringify(err)}`;
-      return errorMsg;
+      // 提取异常的关键信息
+      let errMsg = '网络或服务异常';
+      if (err && typeof err === 'object') {
+        const errObj = err as Record<string, object>;
+        if (errObj.message) {
+          errMsg = String(errObj.message);
+        } else if (errObj.code) {
+          errMsg = `错误代码: ${String(errObj.code)}`;
+        }
+      }
+      return `LLM服务异常: ${errMsg}`;
     }
   }
 

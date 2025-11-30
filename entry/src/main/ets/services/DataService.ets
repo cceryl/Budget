@@ -490,7 +490,8 @@ export class DataService {
    */
   public async saveSettings(settings: Settings): Promise<boolean> {
     try {
-      const json = settings.toJson();
+      // 使用toJsonWithApiKey保存完整设置（包含apiKey）到本地
+      const json = settings.toJsonWithApiKey();
       await this.preferencesInstance?.put(this.SETTINGS_KEY, JSON.stringify(json));
       await this.preferencesInstance?.flush();
       return true;
@@ -587,9 +588,12 @@ export class DataService {
       const budgets = budgetJsons.map((json: BudgetJson) => Budget.fromJson(json));
       await this.saveBudgets(budgets);
 
-      // 导入设置
+      // 导入设置（保留当前的apiKey）
+      const currentSettings = await this.getSettings();
       const settingsJson = data.settings as SettingsJson;
       const settings = Settings.fromJson(settingsJson);
+      // 保留当前的apiKey，不被导入的数据覆盖
+      settings.apiKey = currentSettings.apiKey;
       await this.saveSettings(settings);
 
       return true;
