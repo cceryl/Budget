@@ -1,6 +1,6 @@
 import { ChatMessage } from '../models/ChatMessage';
 import { DataService } from '../services/DataService';
-import { LLMService, WenxinMessage } from '../services/LLMService';
+import { LLMService, QwenMessage } from '../services/LLMService';
 
 @Entry
 @Component
@@ -74,8 +74,8 @@ struct ChatPage {
 
     try {
       // 构建对话历史（不包括刚添加的用户消息，因为LLM服务会添加）
-      const history: WenxinMessage[] = this.messages.slice(0, -1).map(msg => {
-        const historyMsg: WenxinMessage = {
+      const history: QwenMessage[] = this.messages.slice(0, -1).map(msg => {
+        const historyMsg: QwenMessage = {
           role: msg.role,
           content: msg.content
         };

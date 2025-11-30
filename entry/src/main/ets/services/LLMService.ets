@@ -8,46 +8,95 @@ import { DataService } from './DataService';
 /**
  * API使用量接口
  */
-interface WenxinUsage {
+interface QwenUsage {
   prompt_tokens: number;
   completion_tokens: number;
   total_tokens: number;
 }
 
 /**
- * 文心一言API响应接口
+ * 千问消息格式
  */
-interface WenxinResponse {
-  id: string;
-  object: string;
-  created: string;
-  result: string;
-  is_truncated: boolean;
-  need_clear_history: boolean;
-  usage: WenxinUsage;
-}
-
-/**
- * 文心一言消息格式
- */
-export interface WenxinMessage {
+export interface QwenMessage {
   role: string;
   content: string;
 }
 
 /**
- * 文心一言请求体
+ * 千问请求体
  */
-interface WenxinRequestBody {
-  messages: WenxinMessage[];
+interface QwenRequestBody {
+  model: string;
+  messages: QwenMessage[];
+  stream: boolean;
 }
 
 /**
- * LLM服务类 - 封装文心一言API调用
+ * 千问流式响应中的delta
+ */
+interface QwenDelta {
+  content?: string;
+  reasoning_content?: string;
+}
+
+/**
+ * 千问流式响应中的choice
+ */
+interface QwenChoice {
+  delta: QwenDelta;
+  index: number;
+  finish_reason?: string;
+}
+
+/**
+ * 千问流式响应
+ */
+interface QwenStreamResponse {
+  id: string;
+  object: string;
+  created: number;
+  model: string;
+  choices: QwenChoice[];
+  usage?: QwenUsage;
+}
+
+/**
+ * 千问非流式响应中的message
+ */
+interface QwenResponseMessage {
+  role: string;
+  content: string;
+}
+
+/**
+ * 千问非流式响应中的choice
+ */
+interface QwenNonStreamChoice {
+  message: QwenResponseMessage;
+  index: number;
+  finish_reason?: string;
+}
+
+/**
+ * 千问非流式响应
+ */
+interface QwenNonStreamResponse {
+  id: string;
+  object: string;
+  created: number;
+  model: string;
+  choices: QwenNonStreamChoice[];
+  usage?: QwenUsage;
+}
+
+/**
+ * LLM服务类 - 封装千问API调用
  */
 export class LLMService {
   private static instance: LLMService;
-  private readonly API_URL = 'https://aip.baidubce.com/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-lite-8k?access_token=24.00784af7d2b66e2d5e73b57d92142631.2592000.1763093694.282335-116017442';
+  private readonly API_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
+  private readonly API_KEY = 'sk-4b8c9539f4a348dc8dd83ee7a02f207d';
+  private readonly MODEL = 'qwen-flash';
   private dataService: DataService = DataService.getInstance();
 
   private constructor() {}
@@ -150,24 +199,33 @@ export class LLMService {
     }
 
     prompt += '\n请基于以上信息，为用户提供个性化的财务建议和帮助。回答要简洁、实用、友好。';
+    prompt += '\n\n【重要格式要求】由于聊天界面无法渲染Markdown格式，请使用纯文本格式回复，不要使用任何Markdown语法，包括但不限于：';
+    prompt += '\n- 不要使用**粗体**或__粗体__';
+    prompt += '\n- 不要使用*斜体*或_斜体_';
+    prompt += '\n- 不要使用# 标题或其他标题标记';
+    prompt += '\n- 不要使用表格（|分隔符）';
+    prompt += '\n- 不要使用代码块（```）或行内代码（`）';
+    prompt += '\n- 不要使用[链接](url)格式';
+    prompt += '\n- 可以使用普通的换行、数字列表和短横线列表';
+    prompt += '\n- 用空行分段，用"1. 2. 3."或"- "来列举要点即可';
 
     return prompt;
   }
 
   /**
-   * 发送消息到LLM并获取回复
+   * 发送消息到LLM并获取回复（非流式）
    * @param userMessage 用户消息
    * @param conversationHistory 对话历史（不包含系统提示词）
    * @returns LLM的回复内容
    */
-  public async sendMessage(userMessage: string, conversationHistory: WenxinMessage[]): Promise<string> {
+  public async sendMessage(userMessage: string, conversationHistory: QwenMessage[]): Promise<string> {
     try {
       // 构建系统提示词
       const systemPrompt = await this.buildSystemPrompt();
 
       // 组合完整的消息列表：系统提示词 + 历史对话 + 新消息
-      const messages: WenxinMessage[] = [
-        { role: 'user', content: systemPrompt }
+      const messages: QwenMessage[] = [
+        { role: 'system', content: systemPrompt }
       ];
 
       // 添加对话历史（最多保留最近10轮对话以控制token数量）
@@ -177,18 +235,21 @@ export class LLMService {
       }
 
       // 添加当前用户消息
-      const userMsg: WenxinMessage = { role: 'user', content: userMessage };
+      const userMsg: QwenMessage = { role: 'user', content: userMessage };
       messages.push(userMsg);
 
       // 调用API
       const httpRequest = http.createHttp();
-      const requestBody: WenxinRequestBody = {
-        messages: messages
+      const requestBody: QwenRequestBody = {
+        model: this.MODEL,
+        messages: messages,
+        stream: false
       };
 
       const requestOptions: http.HttpRequestOptions = {
         method: http.RequestMethod.POST,
         header: {
+          'Authorization': `Bearer ${this.API_KEY}`,
           'Content-Type': 'application/json'
         },
         extraData: JSON.stringify(requestBody),
@@ -202,24 +263,33 @@ export class LLMService {
       httpRequest.destroy();
 
       if (response.responseCode === 200) {
-        const data = JSON.parse(response.result as string) as WenxinResponse;
-        return data.result;
+        const data = JSON.parse(response.result as string) as QwenNonStreamResponse;
+        if (data.choices && data.choices.length > 0) {
+          const content = data.choices[0].message.content;
+          if (content !== undefined && content !== null) {
+            return content;
+          } else {
+            return `收到了空回复，完整响应: ${response.result}`;
+          }
+        } else {
+          return `API返回了异常数据结构: ${response.result}`;
+        }
       } else {
-        console.error('LLM API error:', response.responseCode, response.result);
-        return '抱歉，我暂时无法回答您的问题，请稍后再试。';
+        const errorMsg = `API请求失败 - HTTP ${response.responseCode}: ${response.result}`;
+        return errorMsg;
       }
     } catch (err) {
-      console.error('LLM service error:', err);
-      return '抱歉，发生了错误，请检查网络连接后重试。';
+      const errorMsg = `LLM服务异常: ${JSON.stringify(err)}`;
+      return errorMsg;
     }
   }
 
   /**
    * 将聊天历史转换为API所需的格式
    */
-  public convertChatHistoryToMessages(messages: WenxinMessage[]): WenxinMessage[] {
+  public convertChatHistoryToMessages(messages: QwenMessage[]): QwenMessage[] {
     return messages.map(msg => {
-      const result: WenxinMessage = {
+      const result: QwenMessage = {
         role: msg.role,
         content: msg.content
       };
